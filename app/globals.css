@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 6%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 6%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 6%;
+
+    --primary: 41 51% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 41 51% 94%;
+    --accent-foreground: 41 51% 36%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 41 51% 56%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 96%;
+
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 240 8% 8%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 41 51% 56%;
+    --primary-foreground: 240 10% 4%;
+
+    --secondary: 240 6% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 6% 14%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 41 51% 18%;
+    --accent-foreground: 41 65% 75%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 15%;
+    --input: 240 6% 15%;
+    --ring: 41 51% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground transition-colors duration-300 antialiased selection:bg-gold-500/20 selection:text-gold-600 dark:selection:text-gold-300;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 160, 89, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 160, 89, 0.6);
+}
+
+/* Luxury Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-panel {
+  background: rgba(18, 18, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-dropdown {
+  background: rgba(14, 14, 17, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+}
+
+/* Gold Text Gradient */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #F5E6BE 0%, #C5A059 50%, #8C6239 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-glow {
+  box-shadow: 0 0 35px -5px rgba(197, 160, 89, 0.35);
+}
+
+.luxury-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12);
+}
+
+.dark .luxury-card-hover:hover {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+/* =========================================================================
+   CINEMATIC LUXURY EFFECTS & ANAMORPHIC FLARES
+   ========================================================================= */
+
+/* Film Grain Texture Overlay */
+.cinematic-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Anamorphic Horizontal Gold Flare Beam */
+.anamorphic-beam {
+  background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.15) 25%, rgba(255, 240, 180, 0.9) 50%, rgba(212, 175, 55, 0.15) 75%, transparent 100%);
+  filter: blur(1px);
+}
+
+/* Cinematic Gold Foil Shimmer Animation */
+@keyframes goldFoilShimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-gold-shimmer {
+  background-size: 200% auto;
+  animation: goldFoilShimmer 6s ease-in-out infinite;
+}
+
+/* Cinematic 35mm Film Strip Border Accent */
+.film-strip-border {
+  background-image: radial-gradient(circle, rgba(212, 175, 55, 0.3) 2px, transparent 2.5px);
+  background-size: 16px 16px;
+}
+
+/* Cinematic Vignette */
+.cinematic-vignette {
+  background: radial-gradient(circle at center, transparent 40%, rgba(5, 7, 12, 0.85) 90%, #030508 100%);
+}
+
+/* Ultra Smooth Ken Burns Zoom */
+@keyframes kenBurnsSlow {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurnsSlow 24s ease-in-out infinite alternate;
+}
+
