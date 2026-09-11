@@ -5,6 +5,7 @@ import { TrendingSection } from "@/components/home/TrendingSection";
 import { BestSellersSection } from "@/components/home/BestSellersSection";
 import { WhyGlamstep } from "@/components/home/WhyGlamstep";
 import { LookbookGallery } from "@/components/home/LookbookGallery";
+import { DeferredHomeSection } from "@/components/home/DeferredHomeSection";
 
 export default function HomePage() {
   return (
@@ -16,19 +17,29 @@ export default function HomePage() {
       <CategoryShowcase />
 
       {/* 3. 4K Macro Craftsmanship CinemaScope Explorer */}
-      <CinematicFilmShowcase />
+      <DeferredHomeSection minHeight="720px">
+        <CinematicFilmShowcase />
+      </DeferredHomeSection>
 
       {/* 4. Trending Now 8-Product Grid */}
-      <TrendingSection />
+      <DeferredHomeSection minHeight="620px">
+        <TrendingSection />
+      </DeferredHomeSection>
 
       {/* 5. Best Sellers Spotlight */}
-      <BestSellersSection />
+      <DeferredHomeSection minHeight="620px">
+        <BestSellersSection />
+      </DeferredHomeSection>
 
       {/* 6. Why WEALTHY STYLE Standards of Excellence */}
-      <WhyGlamstep />
+      <DeferredHomeSection minHeight="480px">
+        <WhyGlamstep />
+      </DeferredHomeSection>
 
       {/* 7. 35mm Cinematic Atelier Reel */}
-      <LookbookGallery />
+      <DeferredHomeSection minHeight="900px">
+        <LookbookGallery />
+      </DeferredHomeSection>
     </div>
   );
 }
