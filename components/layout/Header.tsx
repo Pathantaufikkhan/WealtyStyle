@@ -88,7 +88,7 @@ export function Header() {
   return (
     <>
       {/* Top Announcement Bar */}
-      <div className="bg-zinc-950 text-zinc-300 dark:bg-black dark:text-zinc-400 text-[11px] font-medium tracking-widest uppercase py-2 px-4 sm:px-6 lg:px-8 xl:px-12 border-b border-gold-500/20">
+      <div className="bg-zinc-950 text-zinc-300 text-[11px] font-medium tracking-widest uppercase py-2 px-4 sm:px-6 lg:px-8 xl:px-12 border-b border-gold-500/20">
         <div className="w-full flex items-center justify-between">
           <div className="hidden sm:flex items-center gap-2 text-gold-400">
             <ShieldCheck className="h-3.5 w-3.5" />
@@ -100,7 +100,7 @@ export function Header() {
             <span>
               Complimentary Express Delivery Over ₹2,499 | Use Code{" "}
               <strong className="text-gold-400 font-bold tracking-normal underline">
-                GLAM10
+                WEALTHY10
               </strong>
             </span>
           </div>
@@ -122,17 +122,17 @@ export function Header() {
         className={cn(
           "sticky top-0 z-40 w-full transition-all duration-300",
           isScrolled
-            ? "bg-black/95 shadow-xl shadow-black/80 border-b border-gold-500/20 backdrop-blur-md"
-            : "bg-black border-b border-zinc-900"
+            ? "bg-zinc-950/95 shadow-2xl shadow-black/90 border-b border-gold-500/20 backdrop-blur-md"
+            : "bg-zinc-950 border-b border-zinc-900/80"
         )}
       >
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 h-22 sm:h-24 flex items-center justify-between gap-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 h-20 sm:h-22 flex items-center justify-between gap-4">
           {/* Far Left Corner: Mobile Menu Button + WS Logo */}
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-foreground hover:text-gold-500 transition-colors"
+              className="lg:hidden p-2 -ml-2 text-zinc-300 hover:text-gold-400 transition-colors"
               aria-label="Open mobile menu"
             >
               <Menu className="h-6 w-6" />
@@ -153,20 +153,20 @@ export function Header() {
                   <Link
                     href={link.href}
                     className={cn(
-                      "text-xs font-semibold uppercase tracking-widest flex items-center gap-1 transition-all duration-200",
+                      "text-xs font-semibold uppercase tracking-widest flex items-center gap-1.5 transition-all duration-200",
                       isActive
-                        ? "text-gold-600 dark:text-gold-400 font-bold"
-                        : "text-foreground/85 hover:text-gold-500",
-                      link.isSale && "text-rose-600 dark:text-rose-400 font-bold",
-                      link.highlight && "text-gold-500"
+                        ? "text-gold-400 font-bold"
+                        : "text-zinc-300 hover:text-gold-400",
+                      link.isSale && "text-rose-400 hover:text-rose-300 font-bold",
+                      link.highlight && "text-gold-400 font-bold"
                     )}
                   >
                     <span>{link.name}</span>
                     {hasDropdown && (
-                      <ChevronDown className="h-3 w-3 opacity-60 group-hover:rotate-180 transition-transform duration-200" />
+                      <ChevronDown className="h-3 w-3 text-zinc-400 group-hover:rotate-180 transition-transform duration-200" />
                     )}
                     {link.badge && (
-                      <span className="text-[8px] px-1 py-0.2 rounded bg-gold-500/10 text-gold-600 dark:text-gold-400 border border-gold-500/20 font-normal">
+                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-400 border border-gold-500/30 font-medium">
                         {link.badge}
                       </span>
                     )}
@@ -174,20 +174,20 @@ export function Header() {
 
                   {/* Active Indicator Underline */}
                   {isActive && (
-                    <span className="absolute bottom-4 left-0 right-0 h-0.5 bg-gold-500 rounded-full" />
+                    <span className="absolute bottom-3 left-0 right-0 h-0.5 bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
                   )}
 
                   {/* Dropdown Menu */}
                   {hasDropdown && (
-                    <div className="absolute top-full left-0 w-48 py-2 px-1 glass-dropdown rounded-md opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
-                      <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-widest text-zinc-400 border-b border-border/40">
+                    <div className="absolute top-full left-0 w-52 py-2 px-1 bg-zinc-950/95 border border-gold-500/20 shadow-2xl shadow-black rounded-lg opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 backdrop-blur-md">
+                      <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-widest text-gold-400/80 border-b border-zinc-800">
                         Explore {link.name}
                       </div>
                       {link.featured?.map((item) => (
                         <Link
                           key={item.name}
                           href={item.href}
-                          className="block px-3 py-2 text-xs text-foreground/80 hover:text-gold-500 hover:bg-gold-500/10 rounded transition-colors"
+                          className="block px-3 py-2 text-xs text-zinc-300 hover:text-gold-400 hover:bg-gold-500/10 rounded transition-colors"
                         >
                           {item.name}
                         </Link>
@@ -200,11 +200,11 @@ export function Header() {
           </nav>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Search Trigger */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 text-foreground/80 hover:text-gold-500 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="p-2 text-zinc-300 hover:text-gold-400 transition-colors rounded-full hover:bg-zinc-900/80"
               aria-label="Search store"
             >
               <Search className="h-5 w-5" />
@@ -214,13 +214,13 @@ export function Header() {
             {mounted && (
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-2 text-foreground/80 hover:text-gold-500 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="p-2 text-zinc-300 hover:text-gold-400 transition-colors rounded-full hover:bg-zinc-900/80"
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
                   <Sun className="h-5 w-5 text-gold-400" />
                 ) : (
-                  <Moon className="h-5 w-5" />
+                  <Moon className="h-5 w-5 text-zinc-300" />
                 )}
               </button>
             )}
@@ -228,7 +228,7 @@ export function Header() {
             {/* Wishlist Link */}
             <Link
               href="/account/wishlist"
-              className="p-2 text-foreground/80 hover:text-gold-500 transition-colors relative rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="p-2 text-zinc-300 hover:text-gold-400 transition-colors relative rounded-full hover:bg-zinc-900/80"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -242,7 +242,7 @@ export function Header() {
             {/* User Account / Admin link */}
             <Link
               href={isAuthenticated ? (user?.role === "admin" ? "/admin" : "/account") : "/login"}
-              className="hidden sm:flex items-center gap-1.5 p-2 text-foreground/80 hover:text-gold-500 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="hidden sm:flex items-center gap-1.5 p-2 text-zinc-300 hover:text-gold-400 transition-colors rounded-full hover:bg-zinc-900/80"
               aria-label="Account"
             >
               <User className="h-5 w-5" />
@@ -256,13 +256,13 @@ export function Header() {
             {/* Cart Drawer Trigger */}
             <button
               onClick={() => toggleCartDrawer(true)}
-              className="flex items-center gap-2 bg-zinc-900 text-zinc-50 dark:bg-gold-500 dark:text-zinc-950 px-3.5 py-2 rounded-sm hover:opacity-90 transition-all font-bold text-xs"
+              className="flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-zinc-950 px-3.5 py-2 rounded shadow-md shadow-gold-500/10 hover:brightness-110 transition-all font-bold text-xs"
               aria-label="Shopping Cart"
             >
               <div className="relative">
                 <ShoppingBag className="h-4 w-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-gold-400 text-zinc-950 dark:bg-zinc-900 dark:text-zinc-50 text-[10px] font-black flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-zinc-950 text-gold-400 text-[10px] font-black flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}

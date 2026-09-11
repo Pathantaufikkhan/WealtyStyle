@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Sparkles,
   CheckCircle2,
+  Headphones,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,33 +20,61 @@ import { toast } from "sonner";
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) {
-      toast.error("Please fill in required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
-    setIsSent(true);
-    toast.success("Your message has been received by our VIP Concierge team.");
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          subject,
+          message,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to dispatch message");
+      }
+
+      setIsSent(true);
+      toast.success("Your inquiry has been dispatched to glamstepofficial1@gmail.com!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to transmit message. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const faqs = [
     {
-      q: "How can I verify the authenticity of my GLAMSTEP purchase?",
+      q: "How can I verify the authenticity of my WEALTHY STYLE purchase?",
       a: "Every product includes an individually numbered NFC / QR Certificate of Authenticity that links directly to its verified batch record from our partner workshops in Florence, Japan, or Geneva.",
     },
     {
-      q: "What is your standard delivery timeline in India?",
-      a: "Metro orders (Delhi NCR, Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata) are delivered in 24 to 48 hours via Bluedart Air Courier. Other locations take 2 to 4 business days.",
+      q: "What is your standard delivery timeline across India?",
+      a: "Metro orders (Delhi NCR, Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata) are delivered in 24 to 48 hours via Bluedart Air Express. Other locations take 2 to 4 business days.",
     },
     {
       q: "How does the 7-day return and exchange policy work?",
-      a: "Simply request a return from your Account order history or WhatsApp concierge. Our courier will pick up the package from your doorstep at no additional charge.",
+      a: "Simply request a return from your Account order history or email glamstepofficial1@gmail.com. Our courier will pick up the package from your doorstep at no additional charge.",
     },
     {
       q: "What payment methods are supported?",
@@ -74,42 +103,57 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Info */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="p-6 rounded-2xl bg-card border border-border space-y-6 shadow-sm">
+            <div className="p-6 sm:p-7 rounded-2xl bg-card border border-border space-y-6 shadow-sm">
               <h3 className="font-serif text-lg font-bold text-foreground uppercase tracking-wider">
-                Maison Contact Channels
+                Direct Contact Channels
               </h3>
 
               <div className="space-y-4 text-xs">
+                {/* Official Concierge Email */}
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gold-500/10 text-gold-500 border border-gold-500/20">
+                  <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 border border-gold-500/20 flex-shrink-0">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
                     <strong className="text-foreground block mb-0.5">
-                      Client Concierge Email
+                      Client Concierge Direct Email
                     </strong>
-                    <p className="text-zinc-500">concierge@glamstep.luxury</p>
+                    <a
+                      href="mailto:glamstepofficial1@gmail.com"
+                      className="text-gold-500 font-semibold hover:underline block text-sm"
+                    >
+                      glamstepofficial1@gmail.com
+                    </a>
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                       Avg reply time: &lt; 15 mins
                     </span>
                   </div>
                 </div>
 
+                {/* VIP Hotline & WhatsApp */}
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gold-500/10 text-gold-500 border border-gold-500/20">
+                  <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 border border-gold-500/20 flex-shrink-0">
                     <Phone className="h-5 w-5" />
                   </div>
                   <div>
                     <strong className="text-foreground block mb-0.5">
                       VIP Hotline & WhatsApp
                     </strong>
-                    <p className="text-zinc-500">+91 (800) GLAM-STEP (4526-7837)</p>
-                    <p className="text-zinc-500">+91 98765 43210</p>
+                    <a
+                      href="https://wa.me/919876543210"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-zinc-400 hover:text-gold-500 block"
+                    >
+                      +91 98765 43210 (WhatsApp Available)
+                    </a>
+                    <p className="text-zinc-500">+91 (800) WEALTHY-STYLE</p>
                   </div>
                 </div>
 
+                {/* Maison HQ */}
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gold-500/10 text-gold-500 border border-gold-500/20">
+                  <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 border border-gold-500/20 flex-shrink-0">
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div>
@@ -117,13 +161,14 @@ export default function ContactPage() {
                       Maison Headquarters
                     </strong>
                     <p className="text-zinc-500 leading-relaxed">
-                      GLAMSTEP Luxury Atelier, Level 14, Horizon Center, Golf Course Road, DLF Phase 5, Gurugram, Haryana 122002, India.
+                      WEALTHY STYLE Luxury Atelier, Level 14, Horizon Center, Golf Course Road, DLF Phase 5, Gurugram, Haryana 122002, India.
                     </p>
                   </div>
                 </div>
 
+                {/* Operating Hours */}
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gold-500/10 text-gold-500 border border-gold-500/20">
+                  <div className="p-3 rounded-xl bg-gold-500/10 text-gold-500 border border-gold-500/20 flex-shrink-0">
                     <Clock className="h-5 w-5" />
                   </div>
                   <div>
@@ -139,26 +184,33 @@ export default function ContactPage() {
 
           {/* Right Message Form */}
           <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl bg-card border border-border shadow-sm">
-            <h3 className="font-serif text-lg font-bold text-foreground uppercase tracking-wider mb-2">
+            <h3 className="font-serif text-lg font-bold text-foreground uppercase tracking-wider mb-1">
               Send a Direct Message
             </h3>
             <p className="text-xs text-zinc-500 mb-6">
-              Fill in your inquiry details below and a senior concierge advisor will connect with you.
+              Your inquiry will be sent directly to our executive concierge inbox at <strong className="text-gold-500">glamstepofficial1@gmail.com</strong>.
             </p>
 
             {isSent ? (
               <div className="p-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3">
                 <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
                 <h4 className="font-serif text-lg font-bold text-foreground">
-                  Inquiry Dispatched to Concierge
+                  Inquiry Transmitted Successfully
                 </h4>
                 <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                  Thank you, <strong>{name}</strong>. An advisor has been assigned and will reply to <strong>{email}</strong> shortly.
+                  Thank you, <strong>{name}</strong>. Your message was delivered to <strong>glamstepofficial1@gmail.com</strong>. A client concierge advisor will respond to <strong>{email}</strong> shortly.
                 </p>
                 <Button
-                  variant="outline"
+                  variant="gold"
                   size="sm"
-                  onClick={() => setIsSent(false)}
+                  onClick={() => {
+                    setIsSent(false);
+                    setName("");
+                    setEmail("");
+                    setPhone("");
+                    setSubject("");
+                    setMessage("");
+                  }}
                   className="mt-4"
                 >
                   Send Another Inquiry
@@ -168,14 +220,14 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
-                    label="Your Name"
+                    label="Your Full Name *"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Vikramaditya Roy"
                     required
                   />
                   <Input
-                    label="Email Address"
+                    label="Email Address *"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -184,18 +236,26 @@ export default function ContactPage() {
                   />
                 </div>
 
-                <Input
-                  label="Subject / Topic"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="e.g. Sizing inquiry on Firenze Leather Oxford"
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Phone Number (WhatsApp)"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 9876543210"
+                  />
+                  <Input
+                    label="Inquiry Topic / Subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="e.g. Custom Sizing / Order Consultation"
+                  />
+                </div>
 
                 <Textarea
-                  label="Inquiry Details"
+                  label="Inquiry Details *"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="How can our maison concierge assist your personal styling?"
+                  placeholder="How can our maison concierge assist your personal styling or order inquiry?"
                   rows={5}
                   required
                 />
@@ -203,7 +263,8 @@ export default function ContactPage() {
                 <Button
                   type="submit"
                   variant="gold"
-                  className="w-full h-12 flex items-center justify-center gap-2 font-bold tracking-widest text-xs"
+                  isLoading={isLoading}
+                  className="w-full h-12 flex items-center justify-center gap-2 font-bold tracking-widest text-xs uppercase"
                 >
                   <Send className="h-4 w-4" />
                   <span>Transmit to Concierge</span>

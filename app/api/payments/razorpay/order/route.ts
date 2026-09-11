@@ -5,7 +5,7 @@ import { products } from "@/lib/data/products";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, customerEmail, couponCode } = body;
+    const { items, customerEmail, couponCode, isAdvancePayment } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     // Apply server-side discount if valid
     let discount = 0;
-    if (couponCode === "GLAM10" && calculatedSubtotal >= 2000) {
+    if ((couponCode === "GLAM10" || couponCode === "WEALTHY10") && calculatedSubtotal >= 2000) {
       discount = Math.min((calculatedSubtotal * 10) / 100, 2000);
     } else if (couponCode === "LUXURY20" && calculatedSubtotal >= 10000) {
       discount = Math.min((calculatedSubtotal * 20) / 100, 5000);
@@ -44,14 +44,22 @@ export async function POST(request: Request) {
     const shipping = calculatedSubtotal >= 2499 ? 0 : 199;
     const finalAmount = Math.max(0, calculatedSubtotal - discount + shipping);
 
+    // If advance security deposit is chosen, charge ₹200 now, remaining on delivery
+    const payableAmount = isAdvancePayment ? Math.min(200, finalAmount) : finalAmount;
+    const balanceDue = Math.max(0, finalAmount - payableAmount);
+
     const receipt = `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const razorpayOrder = await createRazorpayOrder({
-      amount: finalAmount,
+      amount: payableAmount,
       currency: "INR",
       receipt,
       notes: {
-        customerEmail: customerEmail || "guest@glamstep.luxury",
+        customerEmail: customerEmail || "guest@wealthstyle.luxury",
         couponCode: couponCode || "NONE",
+        paymentMode: isAdvancePayment ? "advance_security_deposit" : "full_online",
+        advancePaid: String(payableAmount),
+        balanceDueOnDelivery: String(balanceDue),
+        totalOrderValue: String(finalAmount),
       },
     });
 
@@ -59,6 +67,10 @@ export async function POST(request: Request) {
       orderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
+      payableAmount,
+      balanceDue,
+      totalAmount: finalAmount,
+      isAdvancePayment: Boolean(isAdvancePayment),
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_glamstep_demo",
     });
   } catch (error: any) {

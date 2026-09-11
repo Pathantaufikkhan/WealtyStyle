@@ -145,8 +145,10 @@ export interface Order {
   shippingCost: number;
   tax: number;
   grandTotal: number;
-  paymentMethod: 'Razorpay' | 'COD' | 'UPI' | 'Card';
-  paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+  advancePaid?: number;
+  balanceDue?: number;
+  paymentMethod: 'Razorpay' | 'COD' | 'Advance_COD' | 'UPI' | 'Card';
+  paymentStatus: 'Pending' | 'Paid' | 'Partially Paid' | 'Failed' | 'Refunded';
   paymentId?: string;
   orderStatus: OrderStatus;
   trackingNumber?: string;
@@ -172,6 +174,7 @@ export interface Coupon {
 export interface UserProfile {
   id: string;
   email: string;
+  recoveryEmail?: string;
   fullName: string;
   phone?: string;
   avatarUrl?: string;

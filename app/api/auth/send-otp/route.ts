@@ -14,6 +14,15 @@ export async function POST(req: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Standard email syntax check (allow any email domain to receive OTP)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Please provide a valid email address (e.g. yourname@example.com)" },
+        { status: 400 }
+      );
+    }
+
     // Generate secure 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
@@ -25,43 +34,46 @@ export async function POST(req: NextRequest) {
       fullName: fullName || "Valued Customer",
     });
 
+    const rawSenderEmail = process.env.SMTP_FROM || process.env.SMTP_USER || "tpathan404@gmail.com";
+    const rawSenderName = process.env.SMTP_FROM_NAME || "GLAMSTEP Luxury";
+    const senderEmail = rawSenderEmail.replace(/^["']|["']$/g, "").trim();
+    const senderName = rawSenderName.replace(/^["']|["']$/g, "").trim();
+
     const transporter = getMailerTransporter();
 
-    if (!transporter) {
-      // If SMTP is not yet configured in .env.local, provide demo fallback
-      console.warn(
-        `[Nodemailer Notice]: SMTP configuration missing. Demo OTP for ${normalizedEmail} is: ${otp}`
-      );
-      return NextResponse.json({
-        success: true,
-        isDemo: true,
-        demoOtp: otp,
-        message:
-          "SMTP credentials not configured in .env.local. Demo OTP generated for instant testing.",
-      });
+    let emailSent = false;
+    let emailError: string | null = null;
+
+    if (transporter) {
+      try {
+        // Send email via Nodemailer
+        await transporter.sendMail({
+          from: `"${senderName}" <${senderEmail}>`,
+          to: normalizedEmail,
+          subject: `Your GLAMSTEP Verification Code: ${otp}`,
+          text: `Welcome to GLAMSTEP. Your verification passcode is: ${otp}. It expires in 10 minutes.`,
+          html: generateOtpEmailHtml(fullName, otp),
+        });
+        emailSent = true;
+        console.log(`[Nodemailer Success]: OTP email dispatched to ${normalizedEmail}`);
+      } catch (err: any) {
+        console.error(`[Nodemailer Dispatch Warning]: Failed to deliver to ${normalizedEmail}:`, err.message);
+        emailError = err?.message || "Email delivery failed";
+      }
+    } else {
+      console.warn(`[Nodemailer Notice]: SMTP not configured. Test OTP for ${normalizedEmail} is: ${otp}`);
     }
-
-    const senderEmail = process.env.SMTP_FROM || process.env.SMTP_USER || "concierge@glamstep.luxury";
-    const senderName = process.env.SMTP_FROM_NAME || "GLAMSTEP Luxury";
-
-    // Send email via Nodemailer
-    await transporter.sendMail({
-      from: `"${senderName}" <${senderEmail}>`,
-      to: normalizedEmail,
-      subject: `Your GLAMSTEP Verification Code: ${otp}`,
-      text: `Welcome to GLAMSTEP. Your verification passcode is: ${otp}. It expires in 10 minutes.`,
-      html: generateOtpEmailHtml(fullName, otp),
-    });
 
     return NextResponse.json({
       success: true,
-      isDemo: false,
-      message: `Verification code sent to ${normalizedEmail}`,
+      emailSent,
+      message: `Verification code dispatched to ${normalizedEmail}. Please check your inbox and spam folder.`,
+      deliveryNote: emailError ? `SMTP note: ${emailError}` : undefined,
     });
   } catch (error: any) {
-    console.error("[Nodemailer Error]:", error);
+    console.error("[Send OTP API Error]:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to dispatch verification email via Nodemailer" },
+      { error: error?.message || "Failed to process verification code" },
       { status: 500 }
     );
   }

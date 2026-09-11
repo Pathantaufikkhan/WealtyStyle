@@ -139,9 +139,14 @@ export default function AdminOrdersPage() {
                   </td>
 
                   <td className="p-4">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold">
-                      {order.paymentMethod} ({order.paymentStatus})
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold block w-fit mb-1">
+                      {order.paymentMethod === "Advance_COD" ? "Advance COD" : order.paymentMethod} • {order.paymentStatus}
                     </span>
+                    {order.advancePaid !== undefined && order.advancePaid > 0 && order.paymentMethod === "Advance_COD" && (
+                      <span className="text-[10px] text-zinc-400 block font-mono">
+                        Adv: <strong className="text-emerald-400">₹{order.advancePaid}</strong> | Collect: <strong className="text-gold-400">{formatPrice(order.balanceDue || 0)}</strong>
+                      </span>
+                    )}
                   </td>
 
                   <td className="p-4">

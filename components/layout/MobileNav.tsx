@@ -189,9 +189,9 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
               {/* Bottom Info */}
               <div className="p-5 border-t border-border bg-zinc-50/50 dark:bg-zinc-950/50 text-[11px] text-zinc-400">
-                <p className="font-semibold text-foreground">GLAMSTEP Luxury Concierge</p>
-                <p>concierge@glamstep.luxury</p>
-                <p>+91 (800) GLAM-STEP</p>
+                <p className="font-semibold text-foreground">WEALTHY STYLE Luxury Concierge</p>
+                <p>concierge@wealthstyle.luxury</p>
+                <p>+91 (800) WEALTHY-STYLE</p>
               </div>
             </motion.div>
           </>

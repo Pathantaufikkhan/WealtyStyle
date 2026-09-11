@@ -15,6 +15,9 @@ import {
   Sparkles,
   MapPin,
   Banknote,
+  Shield,
+  BadgeAlert,
+  Info,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useAuthStore } from "@/lib/store/useAuthStore";
@@ -45,29 +48,33 @@ export default function CheckoutPage() {
 
   // Form states
   const [customerInfo, setCustomerInfo] = useState({
-    fullName: user?.fullName || "Siddharth Verma",
-    email: user?.email || "siddharth.v@example.com",
-    phone: user?.phone || "9876543210",
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
   });
 
   const [address, setAddress] = useState({
-    houseFlat: user?.savedAddresses?.[0]?.houseFlat || "Penthouse 1402, Tower 4",
-    street: user?.savedAddresses?.[0]?.street || "Golf Course Road",
-    area: user?.savedAddresses?.[0]?.area || "DLF Phase 5",
-    city: user?.savedAddresses?.[0]?.city || "Gurugram",
-    state: user?.savedAddresses?.[0]?.state || "Haryana",
-    pincode: user?.savedAddresses?.[0]?.pincode || "122002",
-    landmark: user?.savedAddresses?.[0]?.landmark || "Opposite Horizon Centre",
+    houseFlat: user?.savedAddresses?.[0]?.houseFlat || "",
+    street: user?.savedAddresses?.[0]?.street || "",
+    area: user?.savedAddresses?.[0]?.area || "",
+    city: user?.savedAddresses?.[0]?.city || "",
+    state: user?.savedAddresses?.[0]?.state || "",
+    pincode: user?.savedAddresses?.[0]?.pincode || "",
+    landmark: user?.savedAddresses?.[0]?.landmark || "",
   });
 
   const [deliveryOption, setDeliveryOption] = useState<"standard" | "express">("standard");
-  const [paymentMethod, setPaymentMethod] = useState<"Razorpay" | "COD" | "UPI">("Razorpay");
+  const [paymentMethod, setPaymentMethod] = useState<"Advance_COD" | "Razorpay" | "COD">("Advance_COD");
 
   const subtotal = getSubtotal();
   const discount = getDiscountAmount();
   const baseShipping = getShippingFee();
   const shipping = deliveryOption === "express" ? baseShipping + 250 : baseShipping;
   const grandTotal = Math.max(0, subtotal - discount + shipping);
+
+  // ₹200 Advance Payment Calculations
+  const advanceAmount = Math.min(200, grandTotal);
+  const balanceDueOnDelivery = Math.max(0, grandTotal - advanceAmount);
 
   if (items.length === 0) {
     return (
@@ -108,46 +115,58 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // 1. Call server-side Razorpay order creation endpoint
-      const orderRes = await fetch("/api/payments/razorpay/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            productId: i.productId,
-            selectedVariant: i.selectedVariant,
-            quantity: i.quantity,
-          })),
-          customerEmail: customerInfo.email,
-          couponCode: appliedCoupon?.code,
-        }),
-      });
+      const isAdvance = paymentMethod === "Advance_COD";
+      const isFullOnline = paymentMethod === "Razorpay";
+      const isPureCod = paymentMethod === "COD";
 
-      if (!orderRes.ok) {
-        throw new Error("Failed to initialize server-side order");
-      }
+      let paymentId = "COD_CONFIRMED";
 
-      const orderData = await orderRes.json();
+      // If online payment is needed (either ₹200 advance or 100% full online)
+      if (isAdvance || isFullOnline) {
+        // 1. Call server-side Razorpay order creation endpoint
+        const orderRes = await fetch("/api/payments/razorpay/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              productId: i.productId,
+              selectedVariant: i.selectedVariant,
+              quantity: i.quantity,
+            })),
+            customerEmail: customerInfo.email,
+            couponCode: appliedCoupon?.code,
+            isAdvancePayment: isAdvance,
+          }),
+        });
 
-      // 2. Signature verification simulation / execution
-      const verifyRes = await fetch("/api/payments/razorpay/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          razorpay_order_id: orderData.orderId,
-          razorpay_payment_id: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          razorpay_signature: `sig_${Date.now()}_verified`,
-        }),
-      });
+        if (!orderRes.ok) {
+          throw new Error("Failed to initialize server-side payment order");
+        }
 
-      const verifyData = await verifyRes.json();
+        const orderData = await orderRes.json();
 
-      if (!verifyData.verified && paymentMethod !== "COD") {
-        throw new Error("Payment verification failed");
+        // 2. Signature verification simulation / execution
+        const verifyRes = await fetch("/api/payments/razorpay/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: orderData.orderId,
+            razorpay_payment_id: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            razorpay_signature: `sig_${Date.now()}_verified`,
+          }),
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (!verifyData.verified) {
+          throw new Error("Payment verification failed");
+        }
+
+        paymentId = verifyData.paymentId || (isAdvance ? "ADVANCE_200_PAID" : "RAZORPAY_PAID");
       }
 
       // 3. Assemble created order
-      const newOrderNumber = `GS-${Math.floor(100000 + Math.random() * 900000)}`;
+      const newOrderNumber = `WS-${Math.floor(100000 + Math.random() * 900000)}`;
       const orderItems: OrderItem[] = items.map((item) => ({
         id: item.id,
         productId: item.product.id,
@@ -180,9 +199,11 @@ export default function CheckoutPage() {
         shippingCost: shipping,
         tax: 0,
         grandTotal,
-        paymentMethod: paymentMethod === "COD" ? "COD" : "Razorpay",
-        paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
-        paymentId: verifyData.paymentId || "COD_CONFIRMED",
+        advancePaid: isAdvance ? advanceAmount : isFullOnline ? grandTotal : 0,
+        balanceDue: isAdvance ? balanceDueOnDelivery : isPureCod ? grandTotal : 0,
+        paymentMethod: isAdvance ? "Advance_COD" : isPureCod ? "COD" : "Razorpay",
+        paymentStatus: isAdvance ? "Partially Paid" : isPureCod ? "Pending" : "Paid",
+        paymentId,
         orderStatus: "Confirmed",
         trackingNumber: `BD-${Math.floor(10000000 + Math.random() * 90000000)}`,
         estimatedDelivery: new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0],
@@ -194,7 +215,12 @@ export default function CheckoutPage() {
       addOrder(finalOrder);
       clearCart();
 
-      toast.success("Order Placed Successfully!");
+      if (isAdvance) {
+        toast.success(`₹200 Security Advance Paid! Remaining ₹${balanceDueOnDelivery} due upon delivery.`);
+      } else {
+        toast.success("Order Placed Successfully!");
+      }
+
       router.push(`/checkout/success?orderNumber=${newOrderNumber}&orderId=${finalOrder.id}`);
     } catch (err: any) {
       console.error(err);
@@ -219,15 +245,15 @@ export default function CheckoutPage() {
           </div>
 
           <div className="hidden sm:flex items-center gap-3 text-xs font-semibold">
-            <span className={`px-3 py-1 rounded-full ${step >= 1 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800"}`}>
+            <span className={`px-3 py-1 rounded-full ${step >= 1 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400"}`}>
               1. Details
             </span>
             <ChevronRight className="h-4 w-4 text-zinc-400" />
-            <span className={`px-3 py-1 rounded-full ${step >= 2 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800"}`}>
+            <span className={`px-3 py-1 rounded-full ${step >= 2 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400"}`}>
               2. Address
             </span>
             <ChevronRight className="h-4 w-4 text-zinc-400" />
-            <span className={`px-3 py-1 rounded-full ${step >= 3 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800"}`}>
+            <span className={`px-3 py-1 rounded-full ${step >= 3 ? "bg-gold-500 text-zinc-950 font-bold" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400"}`}>
               3. Payment
             </span>
           </div>
@@ -266,44 +292,43 @@ export default function CheckoutPage() {
                     onChange={(e) =>
                       setCustomerInfo({ ...customerInfo, fullName: e.target.value })
                     }
-                    placeholder="Enter your full name"
+                    placeholder="e.g. Vikramaditya Roy"
                     required
                   />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
-                      label="Email Address (For Order Updates)"
+                      label="Email Address"
                       type="email"
                       value={customerInfo.email}
                       onChange={(e) =>
                         setCustomerInfo({ ...customerInfo, email: e.target.value })
                       }
-                      placeholder="name@example.com"
+                      placeholder="name@domain.com"
                       required
                     />
 
                     <Input
-                      label="Mobile Phone (For Courier SMS Tracking)"
-                      type="tel"
+                      label="Phone Number"
                       value={customerInfo.phone}
                       onChange={(e) =>
                         setCustomerInfo({ ...customerInfo, phone: e.target.value })
                       }
-                      placeholder="10-digit mobile number"
+                      placeholder="9876543210"
                       required
                     />
                   </div>
 
                   <Button type="submit" variant="gold" className="w-full mt-2">
-                    Proceed to Shipping Address
+                    Proceed to Delivery Address
                   </Button>
                 </form>
               ) : (
                 <div className="text-xs text-zinc-500 space-y-1">
-                  <p>
-                    <strong className="text-foreground">{customerInfo.fullName}</strong> • {customerInfo.phone}
+                  <p className="text-foreground font-semibold">
+                    {customerInfo.fullName}
                   </p>
-                  <p>{customerInfo.email}</p>
+                  <p>{customerInfo.email} • {customerInfo.phone}</p>
                 </div>
               )}
             </div>
@@ -316,7 +341,7 @@ export default function CheckoutPage() {
                     2
                   </span>
                   <h3 className="font-serif text-base font-bold text-foreground uppercase tracking-wider">
-                    Shipping Address (Pan-India)
+                    Shipping Destination
                   </h3>
                 </div>
                 {step > 2 && (
@@ -473,59 +498,112 @@ export default function CheckoutPage() {
                     3
                   </span>
                   <h3 className="font-serif text-base font-bold text-foreground uppercase tracking-wider">
-                    Payment Gateway Selection
+                    Payment & Security Method
                   </h3>
                 </div>
 
-                <div className="space-y-3">
-                  {/* Razorpay Online (Cards, UPI, Netbanking, Wallets) */}
+                <div className="space-y-3.5">
+                  {/* Option 1: ₹200 Advance Security Deposit (Recommended for COD) */}
                   <div
-                    onClick={() => setPaymentMethod("Razorpay")}
-                    className={`p-4 rounded-lg border cursor-pointer transition-all flex items-start justify-between ${
-                      paymentMethod === "Razorpay"
-                        ? "border-gold-500 bg-gold-500/10 ring-1 ring-gold-500/40"
+                    onClick={() => setPaymentMethod("Advance_COD")}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden ${
+                      paymentMethod === "Advance_COD"
+                        ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
                         : "border-border hover:border-zinc-400"
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <CreditCard className="h-5 w-5 text-gold-500 mt-0.5" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-foreground">
-                            Razorpay Secure Online Checkout
+                    <div className="flex items-start gap-3.5">
+                      <div className="p-2 rounded-lg bg-gold-500/20 text-gold-500 mt-0.5 flex-shrink-0">
+                        <Shield className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs sm:text-sm font-bold text-foreground">
+                            ₹200 Security Advance + Pay Remaining on Delivery
                           </p>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
-                            RECOMMENDED
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-500 text-zinc-950 font-black uppercase tracking-wider">
+                            RECOMMENDED • COD SECURITY
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-500 mt-1">
-                          UPI (GPay / PhonePe / Paytm), Credit & Debit Cards, Net Banking, EMI
+
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                          Pay a small <strong className="text-gold-500 font-bold">₹200 security deposit</strong> online now via Razorpay (UPI, GPay, Card) to lock in your verified order. Pay the remaining <strong className="text-foreground font-bold">{formatPrice(balanceDueOnDelivery)}</strong> in cash or UPI QR upon doorstep delivery.
+                        </p>
+
+                        {/* Breakdown pill */}
+                        <div className="mt-3 grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-background/80 border border-border/80 text-xs">
+                          <div>
+                            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay Online Now</span>
+                            <strong className="text-gold-500 text-sm font-bold">₹{advanceAmount}</strong>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay on Delivery</span>
+                            <strong className="text-foreground text-sm font-bold">{formatPrice(balanceDueOnDelivery)}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Option 2: 100% Full Prepayment Online via Razorpay */}
+                  <div
+                    onClick={() => setPaymentMethod("Razorpay")}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
+                      paymentMethod === "Razorpay"
+                        ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
+                        : "border-border hover:border-zinc-400"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 mt-0.5 flex-shrink-0">
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs sm:text-sm font-bold text-foreground">
+                            100% Full Online Prepayment (Razorpay)
+                          </p>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
+                            INSTANT CONFIRMATION
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          Pay full {formatPrice(grandTotal)} with UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, or EMI. Zero balance at doorstep.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Cash on Delivery */}
-                  <div
-                    onClick={() => setPaymentMethod("COD")}
-                    className={`p-4 rounded-lg border cursor-pointer transition-all flex items-start justify-between ${
-                      paymentMethod === "COD"
-                        ? "border-gold-500 bg-gold-500/10 ring-1 ring-gold-500/40"
-                        : "border-border hover:border-zinc-400"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <Banknote className="h-5 w-5 text-gold-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs font-bold text-foreground">
-                          Cash on Delivery (COD)
-                        </p>
-                        <p className="text-[11px] text-zinc-500 mt-1">
-                          Pay securely with cash or UPI QR on delivery at your doorstep.
-                        </p>
+                  {/* Option 3: 100% Cash on Delivery (Reserved Exclusively for Verified Valued Clients) */}
+                  {isAuthenticated && user ? (
+                    <div
+                      onClick={() => setPaymentMethod("COD")}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
+                        paymentMethod === "COD"
+                          ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
+                          : "border-border hover:border-zinc-400"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className="p-2 rounded-lg bg-gold-500/15 text-gold-400 mt-0.5 flex-shrink-0">
+                          <Banknote className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs sm:text-sm font-bold text-foreground">
+                              100% Cash on Delivery (Zero Advance)
+                            </p>
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-400 border border-gold-500/30 font-bold uppercase tracking-wider">
+                              Valued Client Privilege
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                            As a verified WEALTHY STYLE client ({user.fullName || user.email}), 100% doorstep collection is unlocked for your account without any advance deposit.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : null}
                 </div>
 
                 {/* Final Pay Button */}
@@ -538,15 +616,17 @@ export default function CheckoutPage() {
                   >
                     <Lock className="h-4 w-4" />
                     <span>
-                      {paymentMethod === "COD"
-                        ? `Confirm Order (${formatPrice(grandTotal)})`
-                        : `Pay ${formatPrice(grandTotal)} with Razorpay`}
+                      {paymentMethod === "Advance_COD"
+                        ? `Pay ₹${advanceAmount} Advance & Confirm Order`
+                        : paymentMethod === "COD"
+                        ? `Confirm 100% COD Order (${formatPrice(grandTotal)})`
+                        : `Pay Full ${formatPrice(grandTotal)} via Razorpay`}
                     </span>
                   </Button>
 
                   <p className="text-[11px] text-zinc-400 text-center mt-3 flex items-center justify-center gap-1.5">
                     <ShieldCheck className="h-3.5 w-3.5 text-gold-500" />
-                    <span>Cryptographically verified on backend with SHA256 signatures</span>
+                    <span>Encrypted 256-Bit Razorpay Gateway • Safe & Refund Guaranteed</span>
                   </p>
                 </div>
               </div>
@@ -588,7 +668,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Calculations Breakdown */}
-            <div className="space-y-2 text-xs pt-3 border-t border-border">
+            <div className="space-y-2.5 text-xs pt-3 border-t border-border">
               <div className="flex justify-between text-zinc-500">
                 <span>Subtotal</span>
                 <span className="font-semibold text-foreground">{formatPrice(subtotal)}</span>
@@ -615,11 +695,24 @@ export default function CheckoutPage() {
               </div>
 
               <div className="pt-3 border-t border-border flex justify-between text-base font-bold text-foreground">
-                <span>Total Amount</span>
+                <span>Total Order Value</span>
                 <span className="text-xl text-gold-600 dark:text-gold-400">
                   {formatPrice(grandTotal)}
                 </span>
               </div>
+
+              {paymentMethod === "Advance_COD" && (
+                <div className="p-3 rounded-lg bg-gold-500/10 border border-gold-500/20 space-y-1.5 mt-2">
+                  <div className="flex justify-between text-gold-600 dark:text-gold-400 font-bold">
+                    <span>Payable Now (Security Advance):</span>
+                    <span>₹{advanceAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-zinc-400 text-[11px]">
+                    <span>Remaining Due on Delivery:</span>
+                    <strong className="text-foreground">{formatPrice(balanceDueOnDelivery)}</strong>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

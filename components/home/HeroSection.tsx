@@ -6,10 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  Sparkles,
   ChevronLeft,
   ChevronRight,
-  Play,
   Glasses,
   Footprints,
   Watch,
@@ -74,21 +72,21 @@ export function HeroSection() {
       setCurrentIdx((prev) => (prev + 1) % cinematicScenes.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, [currentIdx]);
+  }, []);
 
   const scene = cinematicScenes[currentIdx];
   const SceneIcon = scene.aspectIcon;
 
   return (
-    <section className="relative min-h-[92vh] lg:min-h-[96vh] flex items-center justify-center overflow-hidden bg-black text-white select-none">
+    <section className="relative min-h-[90vh] lg:min-h-[94vh] flex flex-col justify-between overflow-hidden bg-black text-white select-none py-6 sm:py-8">
       {/* 1. Cinematic Background Reel with Crossfade & Ken Burns */}
       <AnimatePresence mode="wait">
         <motion.div
           key={scene.id}
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
           <Image
@@ -96,7 +94,7 @@ export function HeroSection() {
             alt={scene.titlePrimary}
             fill
             priority
-            className="object-cover object-center brightness-[0.42] contrast-[1.12]"
+            className="object-cover object-center brightness-[0.45] contrast-[1.1]"
           />
         </motion.div>
       </AnimatePresence>
@@ -109,7 +107,7 @@ export function HeroSection() {
       <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[1.5px] z-[3] anamorphic-beam opacity-30 pointer-events-none" />
 
       {/* 4. Top Film Strip Metadata Bar */}
-      <div className="absolute top-6 left-0 right-0 z-20 px-4 sm:px-8 max-w-7xl mx-auto flex items-center justify-between text-[10px] sm:text-xs font-mono tracking-widest text-gold-400/80">
+      <div className="relative z-20 px-4 sm:px-8 max-w-7xl mx-auto w-full flex items-center justify-between text-[10px] sm:text-xs font-mono tracking-widest text-gold-400/80 pt-2 sm:pt-4">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
           <span className="text-white font-bold uppercase tracking-wider">REC</span>
@@ -119,21 +117,21 @@ export function HeroSection() {
 
         <div className="flex items-center gap-2 text-zinc-400 text-[10px] uppercase tracking-widest">
           <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
-          <span>MILAN • GENEVA • FLORENCE</span>
+          <span className="hidden xs:inline">MILAN • GENEVA • FLORENCE</span>
         </div>
       </div>
 
       {/* 5. Main Hero Editorial Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-28 sm:py-24 md:py-28 text-center flex flex-col items-center">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 text-center flex flex-col items-center justify-center my-auto">
         {/* Scene Chapter Badge */}
         <AnimatePresence mode="wait">
           <motion.div
             key={scene.tag}
-            initial={{ opacity: 0, y: -15 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-gold-500/10 border border-gold-500/40 text-gold-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.28em] mb-4 sm:mb-6 backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-gold-500/10 border border-gold-500/40 text-gold-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.28em] mb-4 backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.2)]"
           >
             <SceneIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>{scene.tag}</span>
@@ -144,11 +142,11 @@ export function HeroSection() {
         <AnimatePresence mode="wait">
           <motion.h1
             key={scene.titlePrimary + scene.titleHighlight}
-            initial={{ opacity: 0, y: 25 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -25 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="font-serif text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight uppercase leading-[1.08] sm:leading-[1.05]"
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight uppercase leading-[1.08] sm:leading-[1.05]"
           >
             {scene.titlePrimary} <br />
             <span className="bg-gradient-to-r from-gold-300 via-amber-200 to-gold-500 bg-clip-text text-transparent italic animate-gold-shimmer">
@@ -161,17 +159,17 @@ export function HeroSection() {
         <AnimatePresence mode="wait">
           <motion.div
             key={scene.description}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-4 sm:mt-6 max-w-2xl px-2"
           >
             <p className="text-xs sm:text-base md:text-lg text-zinc-300 font-light leading-relaxed tracking-wide">
               {scene.description}
             </p>
             <div className="mt-2.5 sm:mt-3 inline-flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-gold-400/90 tracking-widest uppercase">
-              <Disc3 className="h-3 w-3 animate-spin text-gold-500 flex-shrink-0" />
+              <Disc3 className="h-3 w-3 text-gold-500 flex-shrink-0" />
               <span className="line-clamp-1">CRAFT: {scene.focalPoint}</span>
             </div>
           </motion.div>
@@ -179,10 +177,10 @@ export function HeroSection() {
 
         {/* Action Button */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="mt-6 sm:mt-10 flex flex-wrap items-center justify-center gap-4"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-4"
         >
           <Link href={scene.href}>
             <Button
@@ -198,7 +196,7 @@ export function HeroSection() {
       </div>
 
       {/* 6. Bottom Scene Director Bar & Navigation Controls */}
-      <div className="absolute bottom-3 sm:bottom-6 left-0 right-0 z-20 px-3 sm:px-8 max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <div className="relative z-20 px-4 sm:px-8 max-w-7xl mx-auto w-full flex items-center justify-between gap-2 sm:gap-4 pb-2">
         {/* Category Direct Quick-Pills (Strictly Sunglasses, Shoes, Watches - NO Clothes) */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
           {cinematicScenes.map((item, idx) => {
@@ -222,12 +220,12 @@ export function HeroSection() {
         </div>
 
         {/* Scene Slider Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={() =>
               setCurrentIdx((prev) => (prev - 1 + cinematicScenes.length) % cinematicScenes.length)
             }
-            className="p-2 rounded-full bg-black/60 hover:bg-gold-500 hover:text-zinc-950 text-gold-400 border border-gold-500/30 transition-colors backdrop-blur-md"
+            className="p-1.5 sm:p-2 rounded-full bg-black/60 hover:bg-gold-500 hover:text-zinc-950 text-gold-400 border border-gold-500/30 transition-colors backdrop-blur-md"
             aria-label="Previous Scene"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -236,12 +234,13 @@ export function HeroSection() {
           {/* Progress Indicator */}
           <div className="flex items-center gap-1.5">
             {cinematicScenes.map((_, i) => (
-              <div
+              <button
                 key={i}
                 onClick={() => setCurrentIdx(i)}
+                aria-label={`Go to scene ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   i === currentIdx
-                    ? "w-8 bg-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.8)]"
+                    ? "w-6 sm:w-8 bg-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.8)]"
                     : "w-2 bg-zinc-700 hover:bg-zinc-500"
                 }`}
               />
@@ -252,7 +251,7 @@ export function HeroSection() {
             onClick={() =>
               setCurrentIdx((prev) => (prev + 1) % cinematicScenes.length)
             }
-            className="p-2 rounded-full bg-black/60 hover:bg-gold-500 hover:text-zinc-950 text-gold-400 border border-gold-500/30 transition-colors backdrop-blur-md"
+            className="p-1.5 sm:p-2 rounded-full bg-black/60 hover:bg-gold-500 hover:text-zinc-950 text-gold-400 border border-gold-500/30 transition-colors backdrop-blur-md"
             aria-label="Next Scene"
           >
             <ChevronRight className="h-4 w-4" />
@@ -262,3 +261,4 @@ export function HeroSection() {
     </section>
   );
 }
+

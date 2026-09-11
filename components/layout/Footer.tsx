@@ -28,7 +28,7 @@ export function Footer() {
       return;
     }
     setIsSubscribed(true);
-    toast.success("Welcome to GLAMSTEP VIP! Your ₹500 welcome code: WELCOME500");
+    toast.success("Welcome to WEALTHY STYLE VIP! Your ₹500 welcome code: WELCOME500");
   };
 
   const footerLinks = {

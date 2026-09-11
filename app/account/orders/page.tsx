@@ -38,13 +38,15 @@ export default function AccountOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-gold-500">
-          Shipment Tracking
-        </span>
-        <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground uppercase tracking-tight mt-1">
-          Order History ({orders.length})
-        </h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-border/60">
+        <div>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-gold-500">
+            Shipment Tracking
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground uppercase tracking-tight mt-0.5">
+            Consignment History ({orders.length})
+          </h2>
+        </div>
       </div>
 
       {orders.length > 0 ? (
@@ -86,6 +88,11 @@ export default function AccountOrdersPage() {
                       <span className="text-sm font-bold text-gold-500">
                         {formatPrice(order.grandTotal)}
                       </span>
+                      {order.advancePaid !== undefined && order.advancePaid > 0 && order.paymentMethod === "Advance_COD" && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-semibold">
+                          (₹{order.advancePaid} Paid • {formatPrice(order.balanceDue || 0)} on Delivery)
+                        </span>
+                      )}
                     </div>
 
                     <ChevronDown

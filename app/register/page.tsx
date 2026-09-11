@@ -18,23 +18,24 @@ import {
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RealtimeEmailInput, EmailVerificationResult } from "@/components/auth/RealtimeEmailInput";
 import { WealthStyleLogo } from "@/components/ui/WealthStyleLogo";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, registerUserAccount } = useAuthStore();
 
   // Registration Form State
   const [step, setStep] = useState<"details" | "otp">("details");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailValidation, setEmailValidation] = useState<EmailVerificationResult | null>(null);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
   // OTP State
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [demoOtp, setDemoOtp] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [timer, setTimer] = useState(60);
@@ -65,6 +66,12 @@ export default function RegisterPage() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address format (e.g. name@domain.com).");
+      return;
+    }
+
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters long.");
       return;
@@ -85,16 +92,10 @@ export default function RegisterPage() {
         throw new Error(data.error || "Failed to dispatch verification email");
       }
 
-      if (data.isDemo && data.demoOtp) {
-        setDemoOtp(data.demoOtp);
-        toast.info("SMTP Not Configured", {
-          description: `Generated Demo Code: ${data.demoOtp}`,
-          duration: 12000,
-        });
-      } else {
-        setDemoOtp(null);
-        toast.success(`Verification passcode sent to ${email}`);
-      }
+      toast.success(`Verification code dispatched to ${email}`, {
+        description: "Please check your Inbox and Spam/Junk folder.",
+        duration: 8000,
+      });
 
       setStep("otp");
       setTimer(60);
@@ -180,10 +181,16 @@ export default function RegisterPage() {
         throw new Error(data.error || "Verification failed");
       }
 
-      // Save user session
-      login(data.user);
+      // Save user in registered accounts registry with chosen password
+      registerUserAccount({
+        email: email.trim(),
+        password: password,
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        role: "customer",
+      });
 
-      toast.success("Account successfully verified! Welcome to GLAMSTEP.");
+      toast.success("Account successfully verified! Welcome to WEALTHY STYLE.");
       router.push("/account");
     } catch (err: any) {
       toast.error(err?.message || "Invalid or expired verification code.");
@@ -210,15 +217,9 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to resend code");
 
-      if (data.isDemo && data.demoOtp) {
-        setDemoOtp(data.demoOtp);
-        toast.info("SMTP Not Configured", {
-          description: `New Demo Code: ${data.demoOtp}`,
-          duration: 12000,
-        });
-      } else {
-        toast.success(`A fresh verification code has been dispatched to ${email}`);
-      }
+      toast.success(`A fresh verification code has been dispatched to ${email}`, {
+        description: "Please check your Inbox and Spam/Junk folder.",
+      });
       inputRefs.current[0]?.focus();
     } catch (err: any) {
       toast.error(err?.message || "Failed to resend code.");
@@ -234,7 +235,7 @@ export default function RegisterPage() {
           <WealthStyleLogo variant="stacked" size="md" href="/" />
           <p className="text-xs text-zinc-500 pt-1 max-w-xs">
             {step === "details"
-              ? "Create your exclusive GLAMSTEP account with verified email security."
+              ? "Create your exclusive GLAMSTEP account with live email existence verification."
               : "Enter the verification code sent to your email to activate your account."}
           </p>
         </div>
@@ -250,11 +251,11 @@ export default function RegisterPage() {
               required
             />
 
-            <Input
-              label="Email Address"
-              type="email"
+            <RealtimeEmailInput
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={setEmail}
+              onValidationChange={setEmailValidation}
+              label="Email Address"
               placeholder="name@domain.com"
               required
             />
@@ -300,14 +301,11 @@ export default function RegisterPage() {
               </div>
               <p className="text-xs text-foreground font-medium">{email}</p>
               
-              {demoOtp && (
-                <div className="mt-2 pt-2 border-t border-gold-500/20">
-                  <span className="text-[11px] text-zinc-400">Demo Code (SMTP unconfigured): </span>
-                  <span className="text-xs font-mono font-bold text-gold-400 bg-black/40 px-2 py-0.5 rounded">
-                    {demoOtp}
-                  </span>
-                </div>
-              )}
+              {/* Spam/Junk Folder Notice */}
+              <div className="mt-2 pt-2 border-t border-gold-500/20 flex items-center justify-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400/90 bg-amber-500/5 py-1.5 px-2 rounded-md">
+                <Mail className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                <span>If not in inbox, please check your <strong>Spam / Junk</strong> folder.</span>
+              </div>
             </div>
 
             <form onSubmit={handleVerifyOtp} className="space-y-5">

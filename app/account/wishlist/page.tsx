@@ -30,12 +30,12 @@ export default function AccountWishlistPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
         <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-gold-500">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-gold-500">
             Curated Favorites
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground uppercase tracking-tight mt-1">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground uppercase tracking-tight mt-0.5">
             My Saved Wishlist ({items.length})
           </h2>
         </div>

@@ -156,7 +156,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             </div>
 
             <Link href={`/product/${product.slug}`}>
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground hover:text-gold-500 transition-colors line-clamp-1">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground hover:text-gold-500 transition-colors line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] leading-snug">
                 {product.name}
               </h3>
             </Link>

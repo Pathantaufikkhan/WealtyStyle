@@ -175,19 +175,31 @@ function OrderSuccessContent() {
                 <span className="font-bold text-foreground block mb-1 uppercase tracking-wider">
                   Payment Summary
                 </span>
-                <div className="space-y-1 text-zinc-500">
+                <div className="space-y-1.5 text-zinc-500">
                   <div className="flex justify-between">
                     <span>Payment Method:</span>
-                    <strong className="text-foreground">{order.paymentMethod}</strong>
+                    <strong className="text-foreground">
+                      {order.paymentMethod === "Advance_COD"
+                        ? "₹200 Advance + COD Balance"
+                        : order.paymentMethod}
+                    </strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>{formatPrice(order.subtotal)}</span>
+                    <span>Payment Status:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {order.paymentStatus}
+                    </span>
                   </div>
-                  {order.discount > 0 && (
-                    <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
-                      <span>Savings:</span>
-                      <span>-{formatPrice(order.discount)}</span>
+                  {order.advancePaid !== undefined && order.advancePaid > 0 && (
+                    <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                      <span>Advance Security Paid:</span>
+                      <span>₹{order.advancePaid}</span>
+                    </div>
+                  )}
+                  {order.balanceDue !== undefined && order.balanceDue > 0 && (
+                    <div className="flex justify-between text-gold-500 font-bold bg-gold-500/10 px-2 py-1 rounded">
+                      <span>Due on Delivery (Doorstep):</span>
+                      <span>{formatPrice(order.balanceDue)}</span>
                     </div>
                   )}
                   <div className="flex justify-between pt-1 border-t border-border font-bold text-foreground text-sm">
