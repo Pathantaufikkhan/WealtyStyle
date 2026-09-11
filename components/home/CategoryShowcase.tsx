@@ -75,7 +75,7 @@ export function CategoryShowcase() {
                 alt={cat.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"
-                className="object-cover object-center group-hover:scale-110 transition-transform duration-1000 ease-out"
+                className="object-cover object-center group-hover:scale-110 transition-transform duration-1000 ease-out will-change-transform"
               />
 
               {/* Gradient Scrim */}

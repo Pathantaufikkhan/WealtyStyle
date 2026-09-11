@@ -46,6 +46,7 @@ export function CinematicAmbientLight() {
   return (
     <div
       className="pointer-events-none fixed inset-0 z-30 overflow-hidden hidden md:block"
+      style={{ contain: "strict" }}
       aria-hidden="true"
     >
       {/* Subtle Warm Gold Radial Ambient Cursor Glow */}
@@ -55,9 +56,10 @@ export function CinematicAmbientLight() {
           transform: "translate3d(-500px, -500px, 0)",
           opacity: 0,
           background:
-            "radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.015) 40%, transparent 70%)",
+            "radial-gradient(circle, rgba(212, 175, 55, 0.045) 0%, rgba(212, 175, 55, 0.01) 45%, transparent 70%)",
+          backfaceVisibility: "hidden",
         }}
-        className="h-[600px] w-[600px] rounded-full blur-[40px] will-change-transform transition-opacity duration-500"
+        className="h-[550px] w-[550px] rounded-full blur-[35px] will-change-transform transition-opacity duration-500"
       />
     </div>
   );

@@ -83,17 +83,18 @@ export function HeroSection() {
       <AnimatePresence mode="wait">
         <motion.div
           key={scene.id}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 z-0"
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 z-0 gpu-layer will-change-transform"
         >
           <Image
             src={scene.image}
             alt={scene.titlePrimary}
             fill
             priority
+            sizes="100vw"
             className="object-cover object-center brightness-[0.45] contrast-[1.1]"
           />
         </motion.div>

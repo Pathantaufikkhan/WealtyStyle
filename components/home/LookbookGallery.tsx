@@ -140,7 +140,7 @@ export function LookbookGallery() {
                     alt={frame.title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-out brightness-90 group-hover:brightness-100"
+                    className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-out brightness-90 group-hover:brightness-100 will-change-transform"
                   />
 
                   {/* Gradient Scrim */}

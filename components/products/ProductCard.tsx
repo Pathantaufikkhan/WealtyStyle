@@ -106,10 +106,10 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {/* Wishlist Button (Always Visible Top Right) */}
           <button
             onClick={handleWishlistClick}
-            className={`absolute top-2.5 right-2.5 z-10 p-2 rounded-full backdrop-blur-md transition-all duration-200 ${
+            className={`absolute top-2.5 right-2.5 z-10 p-2 rounded-full transition-all duration-200 shadow-sm ${
               inWishlist
                 ? "bg-rose-500 text-white shadow-md"
-                : "bg-background/80 text-foreground/80 hover:bg-background hover:text-rose-500 hover:scale-110"
+                : "bg-background/90 text-foreground/80 hover:bg-background hover:text-rose-500 hover:scale-110 border border-border/40"
             }`}
             aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
           >
@@ -124,7 +124,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           <div className="absolute inset-x-3 bottom-3 hidden lg:flex items-center gap-2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
             <button
               onClick={handleQuickViewClick}
-              className="flex-1 h-9 px-3 bg-background/95 hover:bg-background text-foreground text-[11px] font-bold uppercase tracking-wider rounded-sm shadow-md flex items-center justify-center gap-1.5 transition-colors border border-border backdrop-blur-sm"
+              className="flex-1 h-9 px-3 bg-background/95 hover:bg-background text-foreground text-[11px] font-bold uppercase tracking-wider rounded-sm shadow-md flex items-center justify-center gap-1.5 transition-colors border border-border"
             >
               <Eye className="h-3.5 w-3.5" />
               <span>Quick View</span>
