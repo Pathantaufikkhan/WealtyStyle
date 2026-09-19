@@ -21,6 +21,7 @@ import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { formatPrice } from "@/lib/utils/currency";
 import { Button } from "@/components/ui/button";
 import { RecoveryEmailModal } from "@/components/auth/RecoveryEmailModal";
+import { MembershipStatusCard } from "@/components/account/MembershipStatusCard";
 
 export default function AccountOverviewPage() {
   const { user } = useAuthStore();
@@ -57,6 +58,9 @@ export default function AccountOverviewPage() {
 
   return (
     <div className="space-y-8">
+      {/* Valued Client Membership Privilege Status Card */}
+      <MembershipStatusCard />
+
       {/* Section Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-border/60">
         <div>

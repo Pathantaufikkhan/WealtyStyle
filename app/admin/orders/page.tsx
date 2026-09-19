@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useStoreData } from "@/lib/store/useStoreData";
 import { formatPrice } from "@/lib/utils/currency";
+import { downloadOrderInvoicePDF } from "@/lib/utils/invoice";
+import { Button } from "@/components/ui/button";
 import { OrderStatus } from "@/types";
 import { toast } from "sonner";
 
@@ -100,6 +102,7 @@ export default function AdminOrdersPage() {
                 <th className="p-4">Total</th>
                 <th className="p-4">Payment</th>
                 <th className="p-4">Status Pipeline</th>
+                <th className="p-4 text-right">Tax Invoice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800 text-zinc-300">
@@ -165,6 +168,18 @@ export default function AdminOrdersPage() {
                         </option>
                       ))}
                     </select>
+                  </td>
+
+                  <td className="p-4 text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadOrderInvoicePDF(order)}
+                      className="text-[11px] h-8 px-2.5 flex items-center gap-1.5 border-zinc-700 hover:border-gold-500 hover:text-gold-400"
+                    >
+                      <Download className="h-3 w-3" />
+                      <span>Invoice</span>
+                    </Button>
                   </td>
                 </tr>
               ))}

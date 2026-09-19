@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useStoreData } from "@/lib/store/useStoreData";
 import { formatPrice } from "@/lib/utils/currency";
+import { downloadOrderInvoicePDF } from "@/lib/utils/invoice";
 import { Button } from "@/components/ui/button";
 
 function OrderSuccessContent() {
@@ -61,7 +62,7 @@ function OrderSuccessContent() {
             Thank You for Your Order
           </h1>
           <p className="text-sm text-zinc-500 max-w-md mx-auto">
-            Order Reference: <strong className="font-mono text-foreground">{orderNumber}</strong>. A confirmation email and SMS dispatch updates have been sent.
+            Order Reference: <strong className="font-mono text-foreground">{orderNumber}</strong>. A tax invoice & dispatch updates have been delivered to your email.
           </p>
         </div>
 
@@ -110,7 +111,7 @@ function OrderSuccessContent() {
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div>
                 <h3 className="font-serif text-lg font-bold text-foreground">
-                  Order Details
+                  Order Details & Tax Summary
                 </h3>
                 <p className="text-xs text-zinc-400">
                   Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", { dateStyle: "long" })}
@@ -118,13 +119,13 @@ function OrderSuccessContent() {
               </div>
 
               <Button
-                variant="outline"
+                variant="gold"
                 size="sm"
-                onClick={() => alert(`Downloaded Invoice receipt for ${order.orderNumber}`)}
-                className="flex items-center gap-1.5 text-xs"
+                onClick={() => downloadOrderInvoicePDF(order)}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider shadow-sm"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Invoice PDF</span>
+                <span>Download Tax Invoice</span>
               </Button>
             </div>
 

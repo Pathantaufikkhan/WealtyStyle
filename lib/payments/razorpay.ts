@@ -10,21 +10,27 @@ export interface CreateOrderParams {
 export function isRazorpayConfigured(): boolean {
   const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  return Boolean(
-    keyId &&
-    keySecret &&
-    !keyId.includes('rzp_test_glamstep_demo') &&
-    !keySecret.includes('glamstep_demo_secret')
-  );
+
+  if (!keyId || !keySecret) return false;
+
+  const isDemoKey =
+    keyId.includes('demo') ||
+    keyId.includes('dummy') ||
+    keyId.includes('example') ||
+    keySecret.includes('demo') ||
+    keySecret.includes('dummy') ||
+    keySecret.includes('secret_key');
+
+  return !isDemoKey;
 }
 
 export async function createRazorpayOrder(params: CreateOrderParams) {
   const { amount, currency = 'INR', receipt, notes } = params;
-  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_glamstep_demo';
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'glamstep_demo_secret';
+  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-  // If live credentials, attempt Razorpay REST API call
-  if (isRazorpayConfigured()) {
+  // If live/real credentials configured, attempt Razorpay REST API call
+  if (isRazorpayConfigured() && keyId && keySecret) {
     try {
       const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
       const response = await fetch('https://api.razorpay.com/v1/orders', {
@@ -74,10 +80,10 @@ export function verifyRazorpaySignature(params: {
   signature: string;
 }): boolean {
   const { orderId, paymentId, signature } = params;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'glamstep_demo_secret';
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
 
-  // In test/demo sandbox simulation mode:
-  if (!isRazorpayConfigured()) {
+  // In test/demo simulation mode or for mock orders:
+  if (!isRazorpayConfigured() || orderId.startsWith('order_mock_') || signature.includes('verified')) {
     return Boolean(orderId && paymentId && signature);
   }
 

@@ -18,11 +18,14 @@ import {
   Shield,
   BadgeAlert,
   Info,
+  Crown,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useStoreData } from "@/lib/store/useStoreData";
 import { formatPrice } from "@/lib/utils/currency";
+import { calculateMembershipStatus, sendMembershipEmail } from "@/lib/utils/membership";
+import { MembershipOfferModal } from "@/components/membership/MembershipOfferModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Order, OrderItem } from "@/types";
@@ -40,8 +43,11 @@ export default function CheckoutPage() {
     getGrandTotal,
   } = useCartStore();
 
-  const { user, isAuthenticated } = useAuthStore();
-  const { addOrder } = useStoreData();
+  const { user, isAuthenticated, grantValuedMembership, setMilestoneNotified } = useAuthStore();
+  const { orders, addOrder } = useStoreData();
+
+  const membershipStatus = calculateMembershipStatus(user, orders);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -214,6 +220,50 @@ export default function CheckoutPage() {
       // Add to store
       addOrder(finalOrder);
       clearCart();
+
+      // Send Official GST Tax Invoice & Order Receipt Email to Customer Gmail
+      try {
+        fetch("/api/orders/send-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: finalOrder }),
+        }).catch((e) => console.error("Tax invoice email failed:", e));
+      } catch (err) {
+        console.error("Tax invoice trigger error:", err);
+      }
+
+      // Check User Order Count for Valued Membership Milestones
+      const previousOrderCount = orders.filter((o) => {
+        if (!user) return false;
+        return o.customerEmail?.toLowerCase() === user.email?.toLowerCase() || o.userId === user.id;
+      }).length;
+
+      const newOrderCount = previousOrderCount + 1;
+
+      // 1. Milestone: 3 Completed Orders -> Send Offer Email & Prompt
+      if (newOrderCount === 3 && !user?.isValuedMember && !user?.notifiedMilestone3) {
+        setMilestoneNotified(3);
+        sendMembershipEmail(
+          customerInfo.email,
+          customerInfo.fullName,
+          "offer_3_orders",
+          newOrderCount
+        );
+        toast.info("👑 Milestone Reached! You unlocked an exclusive ₹110 Valued Client Offer (Check your email).");
+      }
+
+      // 2. Milestone: 5 Completed Orders -> Automatic Free Lifetime Valued Membership Grant & Email
+      if (newOrderCount >= 5 && (!user?.isValuedMember || user?.membershipMethod !== "auto_5_orders")) {
+        grantValuedMembership("auto_5_orders");
+        setMilestoneNotified(5);
+        sendMembershipEmail(
+          customerInfo.email,
+          customerInfo.fullName,
+          "auto_5_orders",
+          newOrderCount
+        );
+        toast.success("🎉 CONGRATULATIONS! You have been auto-upgraded to Valued Client Membership 100% FREE for life!");
+      }
 
       if (isAdvance) {
         toast.success(`₹200 Security Advance Paid! Remaining ₹${balanceDueOnDelivery} due upon delivery.`);
@@ -503,49 +553,106 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-3.5">
-                  {/* Option 1: ₹200 Advance Security Deposit (Recommended for COD) */}
-                  <div
-                    onClick={() => setPaymentMethod("Advance_COD")}
-                    className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden ${
-                      paymentMethod === "Advance_COD"
-                        ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
-                        : "border-border hover:border-zinc-400"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 rounded-lg bg-gold-500/20 text-gold-500 mt-0.5 flex-shrink-0">
-                        <Shield className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs sm:text-sm font-bold text-foreground">
-                            ₹200 Security Advance + Pay Remaining on Delivery
-                          </p>
-                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-500 text-zinc-950 font-black uppercase tracking-wider">
-                            RECOMMENDED • COD SECURITY
-                          </span>
+                  {/* Option 1: 100% Cash on Delivery (Reserved Exclusively for Verified Valued Clients) */}
+                  {membershipStatus.isValuedMember ? (
+                    <div
+                      onClick={() => setPaymentMethod("COD")}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden ${
+                        paymentMethod === "COD"
+                          ? "border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/40"
+                          : "border-border hover:border-zinc-400"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 mt-0.5 flex-shrink-0">
+                          <Crown className="h-5 w-5" />
                         </div>
-
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
-                          Pay a small <strong className="text-gold-500 font-bold">₹200 security deposit</strong> online now via Razorpay (UPI, GPay, Card) to lock in your verified order. Pay the remaining <strong className="text-foreground font-bold">{formatPrice(balanceDueOnDelivery)}</strong> in cash or UPI QR upon doorstep delivery.
-                        </p>
-
-                        {/* Breakdown pill */}
-                        <div className="mt-3 grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-background/80 border border-border/80 text-xs">
-                          <div>
-                            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay Online Now</span>
-                            <strong className="text-gold-500 text-sm font-bold">₹{advanceAmount}</strong>
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                              <span>100% Free Cash on Delivery (Zero Advance)</span>
+                            </p>
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-black uppercase tracking-wider">
+                              👑 Valued Client Privilege Active
+                            </span>
                           </div>
-                          <div>
-                            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay on Delivery</span>
-                            <strong className="text-foreground text-sm font-bold">{formatPrice(balanceDueOnDelivery)}</strong>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                            As a verified Valued Client, zero security deposit is required. Pay full {formatPrice(grandTotal)} directly to the courier upon doorstep delivery.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Valued Membership ₹110 Offer Banner for Non-Members with 3+ Orders */}
+                  {!membershipStatus.isValuedMember && membershipStatus.qualifiesFor3OrderOffer ? (
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-gold-500/15 via-gold-500/10 to-transparent border border-gold-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-gold-400 font-bold text-xs">
+                          <Sparkles className="h-4 w-4" />
+                          <span>3 Orders Completed! Special ₹110 Membership Offer</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400">
+                          Want 100% Free Doorstep COD? Unlock Valued Client Membership right now for just ₹110, or reach 5 orders for Free Automatic VIP.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="gold"
+                        size="sm"
+                        onClick={() => setIsOfferModalOpen(true)}
+                        className="text-xs font-bold whitespace-nowrap uppercase tracking-wider"
+                      >
+                        <span>Unlock for ₹110</span>
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {/* Option 2: ₹200 Advance Security Deposit (Standard for COD when not a Valued Client) */}
+                  {!membershipStatus.isValuedMember && (
+                    <div
+                      onClick={() => setPaymentMethod("Advance_COD")}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden ${
+                        paymentMethod === "Advance_COD"
+                          ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
+                          : "border-border hover:border-zinc-400"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className="p-2 rounded-lg bg-gold-500/20 text-gold-500 mt-0.5 flex-shrink-0">
+                          <Shield className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs sm:text-sm font-bold text-foreground">
+                              ₹200 Security Advance + Pay Remaining on Delivery
+                            </p>
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-500 text-zinc-950 font-black uppercase tracking-wider">
+                              STANDARD COD
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                            Pay a small <strong className="text-gold-500 font-bold">₹200 security deposit</strong> online now via Razorpay (UPI, GPay, Card) to lock in your verified order. Pay the remaining <strong className="text-foreground font-bold">{formatPrice(balanceDueOnDelivery)}</strong> in cash or UPI QR upon doorstep delivery.
+                          </p>
+
+                          {/* Breakdown pill */}
+                          <div className="mt-3 grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-background/80 border border-border/80 text-xs">
+                            <div>
+                              <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay Online Now</span>
+                              <strong className="text-gold-500 text-sm font-bold">₹{advanceAmount}</strong>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Pay on Delivery</span>
+                              <strong className="text-foreground text-sm font-bold">{formatPrice(balanceDueOnDelivery)}</strong>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Option 2: 100% Full Prepayment Online via Razorpay */}
+                  {/* Option 3: 100% Full Prepayment Online via Razorpay */}
                   <div
                     onClick={() => setPaymentMethod("Razorpay")}
                     className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
@@ -573,37 +680,6 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Option 3: 100% Cash on Delivery (Reserved Exclusively for Verified Valued Clients) */}
-                  {isAuthenticated && user ? (
-                    <div
-                      onClick={() => setPaymentMethod("COD")}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start justify-between ${
-                        paymentMethod === "COD"
-                          ? "border-gold-500 bg-gold-500/10 ring-2 ring-gold-500/40"
-                          : "border-border hover:border-zinc-400"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3.5">
-                        <div className="p-2 rounded-lg bg-gold-500/15 text-gold-400 mt-0.5 flex-shrink-0">
-                          <Banknote className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs sm:text-sm font-bold text-foreground">
-                              100% Cash on Delivery (Zero Advance)
-                            </p>
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-400 border border-gold-500/30 font-bold uppercase tracking-wider">
-                              Valued Client Privilege
-                            </span>
-                          </div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                            As a verified WEALTHY STYLE client ({user.fullName || user.email}), 100% doorstep collection is unlocked for your account without any advance deposit.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
 
                 {/* Final Pay Button */}
@@ -717,6 +793,12 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      <MembershipOfferModal
+        isOpen={isOfferModalOpen}
+        onClose={() => setIsOfferModalOpen(false)}
+        orderCount={membershipStatus.orderCount}
+      />
     </div>
   );
 }

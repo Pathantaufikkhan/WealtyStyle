@@ -82,11 +82,18 @@ export default function AccountLayout({
 
                 <p className="text-xs text-zinc-400 font-mono">{user?.email}</p>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-400">
-                    <Sparkles className="h-3 w-3 text-gold-400" />
-                    <span>WS Privilege • Black Diamond Tier</span>
-                  </span>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {user?.isValuedMember ? (
+                    <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-sm">
+                      <Crown className="h-3 w-3 text-emerald-400" />
+                      <span>Valued Client VIP (100% Free COD)</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-400">
+                      <Sparkles className="h-3 w-3 text-gold-400" />
+                      <span>Standard Patron</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ShieldCheck,
   Truck,
@@ -18,8 +19,14 @@ import { toast } from "sonner";
 import { WealthStyleLogo } from "@/components/ui/WealthStyleLogo";
 
 export function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+
+  // Do not render storefront consumer footer on admin portal pages
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();

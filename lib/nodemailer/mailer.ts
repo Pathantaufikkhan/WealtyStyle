@@ -484,3 +484,700 @@ export function generatePasswordResetEmailHtml(
 `;
 }
 
+/**
+ * Generates luxury branded HTML email for Valued Client Membership Offer (Milestone: 3 Orders)
+ */
+export function generateMembershipOfferEmailHtml(
+  fullName: string,
+  orderCount: number
+): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exclusive Privilege Offer | WEALTHY STYLE Valued Client</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0c0a09;
+      color: #fafaf9;
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #18181b;
+      border: 1px solid #d4af37;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(212, 175, 55, 0.25);
+    }
+    .header {
+      background: linear-gradient(135deg, #1c1917 0%, #0c0a09 100%);
+      padding: 36px 30px;
+      text-align: center;
+      border-bottom: 1px solid #27272a;
+    }
+    .brand {
+      color: #d4af37;
+      font-size: 24px;
+      letter-spacing: 5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .brand-sub {
+      color: #a1a1aa;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+    .content {
+      padding: 36px 30px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #eab308;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 22px;
+      color: #ffffff;
+      margin: 0 0 14px 0;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .desc {
+      color: #d4d4d8;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .offer-card {
+      background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
+      border: 1px solid #d4af37;
+      border-radius: 14px;
+      padding: 24px;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .perk-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #f4f4f5;
+    }
+    .perk-bullet {
+      color: #eab308;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    .price-tag {
+      display: inline-block;
+      font-size: 28px;
+      font-weight: 900;
+      color: #eab308;
+      margin-top: 8px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #09090b !important;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      border-radius: 8px;
+      margin-top: 10px;
+      box-shadow: 0 10px 15px -3px rgba(212, 175, 55, 0.3);
+    }
+    .auto-note {
+      background: rgba(39, 39, 42, 0.6);
+      border: 1px dashed #52525b;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #a1a1aa;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .footer {
+      background: #09090b;
+      padding: 24px;
+      text-align: center;
+      border-top: 1px solid #27272a;
+      font-size: 12px;
+      color: #71717a;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="brand-sub">Haute Luxury Atelier • Executive Membership</div>
+    </div>
+    <div class="content">
+      <div class="badge">Milestone Unlocked: 3 Orders Completed</div>
+      <h1 class="title">Exclusive Invitation to Valued Client Membership</h1>
+      <p class="desc">
+        Dear <strong>${fullName || "Valued Client"}</strong>,<br/><br/>
+        Congratulations on completing <strong>${orderCount} orders</strong> with WEALTHY STYLE! In recognition of your patronage, we are pleased to extend a private invitation to acquire our <strong>Valued Client Membership</strong> at an exclusive promotional rate of just <strong>₹110</strong>.
+      </p>
+
+      <div class="offer-card">
+        <div style="font-size: 11px; font-weight: 700; color: #d4af37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
+          Exclusive Valued Client Privileges Included:
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">✦</span>
+          <span><strong>100% Free Doorstep Cash on Delivery (COD)</strong> — No ₹200 advance deposit needed!</span>
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">✦</span>
+          <span><strong>Priority Air Courier Dispatch</strong> on all your orders across India</span>
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">✦</span>
+          <span><strong>Direct 24/7 VIP Concierge Support</strong> & early access to new collections</span>
+        </div>
+        <div class="perk-item" style="margin-bottom: 0;">
+          <span class="perk-bullet">✦</span>
+          <span><strong>Gold Client Passport Badge</strong> in your profile</span>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #3f3f46; display: flex; align-items: baseline; justify-content: space-between;">
+          <div>
+            <span style="font-size: 10px; text-transform: uppercase; color: #a1a1aa; letter-spacing: 1px; display: block;">Special Privilege Fee</span>
+            <span class="price-tag">₹110</span>
+          </div>
+          <span style="font-size: 11px; color: #34d399; font-weight: 700;">Zero Expiry / Lifetime VIP</span>
+        </div>
+      </div>
+
+      <div class="auto-note">
+        <strong style="color: #eab308;">Prefer not to purchase right now? No worries at all!</strong><br/>
+        You can upgrade whenever you wish to get Free COD. Additionally, if you complete <strong>5 orders</strong> in total, our system will automatically elevate your account to <strong>Valued Client Membership 100% FREE</strong> as a complimentary loyalty reward!
+      </div>
+
+      <div style="margin-top: 26px;">
+        <a href="http://localhost:3000/account" class="btn">View & Claim in Profile</a>
+      </div>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury Atelier. All rights reserved.<br/>
+      Need concierge assistance? Contact us at concierge@wealthstyle.luxury
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+/**
+ * Generates luxury branded HTML email for Automatic Free Valued Client Membership Grant (Milestone: 5 Orders)
+ */
+export function generateMembershipUnlockedEmailHtml(
+  fullName: string,
+  orderCount: number
+): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Congratulations! Valued Client Membership Granted | WEALTHY STYLE</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0c0a09;
+      color: #fafaf9;
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #18181b;
+      border: 2px solid #d4af37;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -12px rgba(212, 175, 55, 0.35);
+    }
+    .header {
+      background: linear-gradient(135deg, #1c1917 0%, #0c0a09 100%);
+      padding: 40px 30px;
+      text-align: center;
+      border-bottom: 1px solid #27272a;
+    }
+    .brand {
+      color: #d4af37;
+      font-size: 26px;
+      letter-spacing: 5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .brand-sub {
+      color: #a1a1aa;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+    .content {
+      padding: 38px 32px;
+      text-align: center;
+    }
+    .celebration-pill {
+      display: inline-block;
+      background: linear-gradient(90deg, rgba(212,175,55,0.2) 0%, rgba(234,179,8,0.3) 100%);
+      border: 1px solid #eab308;
+      color: #facc15;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 20px;
+      border-radius: 9999px;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 24px;
+      color: #ffffff;
+      margin: 0 0 14px 0;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .desc {
+      color: #d4d4d8;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .vip-card {
+      background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
+      border: 1.5px solid #d4af37;
+      border-radius: 16px;
+      padding: 26px;
+      margin: 24px 0;
+      text-align: left;
+      position: relative;
+    }
+    .perk-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #f4f4f5;
+    }
+    .perk-bullet {
+      color: #eab308;
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    .status-badge {
+      display: inline-block;
+      background: #10b981;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #09090b !important;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 34px;
+      border-radius: 8px;
+      margin-top: 10px;
+      box-shadow: 0 10px 15px -3px rgba(212, 175, 55, 0.3);
+    }
+    .footer {
+      background: #09090b;
+      padding: 24px;
+      text-align: center;
+      border-top: 1px solid #27272a;
+      font-size: 12px;
+      color: #71717a;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="brand-sub">Maison Privée • Valued Client Circle</div>
+    </div>
+    <div class="content">
+      <div class="celebration-pill">🎉 5 Orders Milestone Reached!</div>
+      <h1 class="title">You Are Now a Certified Valued Client!</h1>
+      <p class="desc">
+        Dear <strong>${fullName || "Esteemed Client"}</strong>,<br/><br/>
+        We are thrilled to celebrate your <strong>5th completed acquisition</strong> with WEALTHY STYLE! As our highest expression of gratitude for your loyalty, your account has been <strong>automatically elevated to Valued Client Membership 100% Free of Charge</strong>!
+      </p>
+
+      <div class="vip-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div>
+            <span style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1.5px; display: block;">Membership Status</span>
+            <strong style="color: #eab308; font-size: 16px; letter-spacing: 1px;">VALUED CLIENT VIP</strong>
+          </div>
+          <span class="status-badge">ACTIVE & PERMANENT</span>
+        </div>
+
+        <div style="font-size: 11px; font-weight: 700; color: #d4af37; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">
+          Your Permanent VIP Privileges:
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">👑</span>
+          <span><strong>100% Free Cash on Delivery (COD)</strong> on every order — Zero advance needed forever!</span>
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">👑</span>
+          <span><strong>Complimentary Express Priority Shipping</strong> across India</span>
+        </div>
+        <div class="perk-item">
+          <span class="perk-bullet">👑</span>
+          <span><strong>Dedicated VIP Concierge Desk</strong> for bespoke requests & support</span>
+        </div>
+        <div class="perk-item" style="margin-bottom: 0;">
+          <span class="perk-bullet">👑</span>
+          <span><strong>VIP Gold Passport Badge</strong> prominently featured in your account</span>
+        </div>
+      </div>
+
+      <p class="desc" style="font-size: 13px; color: #a1a1aa;">
+        You can now use 100% Cash on Delivery on your future purchases directly at checkout without paying any advance deposit.
+      </p>
+
+      <div style="margin-top: 26px;">
+        <a href="http://localhost:3000/account" class="btn">View Your VIP Profile</a>
+      </div>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury Atelier. All rights reserved.<br/>
+      Concierge Desk: concierge@wealthstyle.luxury
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+/**
+ * Generates luxury GST Tax Invoice & Order Receipt HTML email
+ */
+export function generateOrderTaxInvoiceEmailHtml(order: any): string {
+  const taxableAmount = Math.round(order.subtotal / 1.18);
+  const totalTax = order.subtotal - taxableAmount;
+  const cgst = Math.round(totalTax / 2);
+  const sgst = totalTax - cgst;
+  const invoiceNumber = `INV-${order.orderNumber}`;
+  const invoiceDate = new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
+    dateStyle: "long",
+  });
+
+  const itemsHtml = (order.items || [])
+    .map(
+      (item: any, idx: number) => `
+    <tr style="border-bottom: 1px solid #27272a;">
+      <td style="padding: 12px 8px; text-align: center; color: #a1a1aa; font-size: 11px;">${idx + 1}</td>
+      <td style="padding: 12px 8px; color: #f4f4f5; font-size: 12px;">
+        <strong style="color: #ffffff;">${item.productName}</strong><br/>
+        <span style="font-size: 10px; color: #a1a1aa;">HSN: ${item.category === "sunglasses" ? "90041000" : item.category === "watches" ? "91021100" : "64039190"} ${item.selectedColor ? `• Color: ${item.selectedColor}` : ""} ${item.selectedSize ? `• Size: ${item.selectedSize}` : ""}</span>
+      </td>
+      <td style="padding: 12px 8px; text-align: center; color: #ffffff; font-size: 12px;">${item.quantity}</td>
+      <td style="padding: 12px 8px; text-align: right; color: #a1a1aa; font-size: 12px;">₹${item.price.toLocaleString("en-IN")}</td>
+      <td style="padding: 12px 8px; text-align: right; color: #eab308; font-weight: 700; font-size: 12px;">₹${(item.price * item.quantity).toLocaleString("en-IN")}</td>
+    </tr>
+  `
+    )
+    .join("");
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GST Tax Invoice & Receipt | WEALTHY STYLE</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #09090b;
+      color: #fafaf9;
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 640px;
+      margin: 25px auto;
+      background: #18181b;
+      border: 1px solid #d4af37;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .header {
+      background: linear-gradient(135deg, #1c1917 0%, #09090b 100%);
+      padding: 30px;
+      text-align: center;
+      border-bottom: 1px solid #27272a;
+    }
+    .brand {
+      color: #d4af37;
+      font-size: 24px;
+      letter-spacing: 4px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .brand-sub {
+      color: #a1a1aa;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .content {
+      padding: 30px 24px;
+    }
+    .inv-badge {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: #eab308;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 18px 0;
+      font-size: 12px;
+    }
+    .meta-col {
+      line-height: 1.6;
+    }
+    .meta-label {
+      color: #a1a1aa;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: block;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .table-container {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 12px;
+    }
+    .table-header th {
+      background: #09090b;
+      color: #a1a1aa;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px 8px;
+      border-bottom: 1px solid #3f3f46;
+    }
+    .tax-breakdown {
+      background: #09090b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 18px;
+      margin: 20px 0;
+      font-size: 12px;
+    }
+    .tax-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: #a1a1aa;
+    }
+    .tax-row strong {
+      color: #f4f4f5;
+    }
+    .tax-row.total {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #3f3f46;
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #09090b !important;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 12px 28px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    .footer {
+      background: #09090b;
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid #27272a;
+      font-size: 11px;
+      color: #71717a;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="brand-sub">Official GST Tax Invoice & Order Receipt</div>
+    </div>
+    <div class="content">
+      <div class="inv-badge">Tax Invoice: ${invoiceNumber}</div>
+      <h2 style="font-size: 20px; color: #ffffff; margin: 0 0 8px 0;">
+        Thank You for Your Acquisition
+      </h2>
+      <p style="font-size: 13px; color: #a1a1aa; margin: 0 0 16px 0; line-height: 1.5;">
+        Dear <strong>${order.customerName || "Valued Patron"}</strong>, your order <strong style="color: #eab308;">#${order.orderNumber}</strong> has been successfully confirmed. Please find your itemized GST Tax Invoice below:
+      </p>
+
+      <div class="meta-grid">
+        <div class="meta-col">
+          <span class="meta-label">Invoice & Order Details</span>
+          <strong>Invoice No:</strong> ${invoiceNumber}<br/>
+          <strong>Date:</strong> ${invoiceDate}<br/>
+          <strong>Payment Method:</strong> ${order.paymentMethod}<br/>
+          <strong>GSTIN:</strong> 07AAACW8891P1Z9
+        </div>
+        <div class="meta-col">
+          <span class="meta-label">Billed & Shipped To</span>
+          <strong>${order.shippingAddress?.fullName || order.customerName}</strong><br/>
+          ${order.shippingAddress?.houseFlat || ""}, ${order.shippingAddress?.street || ""}<br/>
+          ${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} - ${order.shippingAddress?.pincode || ""}<br/>
+          Phone: ${order.customerPhone || order.shippingAddress?.phone || "N/A"}
+        </div>
+      </div>
+
+      <table class="table-container">
+        <thead>
+          <tr class="table-header">
+            <th style="width: 30px; text-align: center;">#</th>
+            <th style="text-align: left;">Item Description</th>
+            <th style="width: 40px; text-align: center;">Qty</th>
+            <th style="width: 80px; text-align: right;">Unit Price</th>
+            <th style="width: 90px; text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div class="tax-breakdown">
+        <div class="tax-row">
+          <span>Total Taxable Amount:</span>
+          <strong>₹${taxableAmount.toLocaleString("en-IN")}</strong>
+        </div>
+        <div class="tax-row">
+          <span>CGST (9.00%):</span>
+          <strong>₹${cgst.toLocaleString("en-IN")}</strong>
+        </div>
+        <div class="tax-row">
+          <span>SGST (9.00%):</span>
+          <strong>₹${sgst.toLocaleString("en-IN")}</strong>
+        </div>
+        <div class="tax-row">
+          <span>Total Integrated Taxes (18% Included):</span>
+          <strong style="color: #eab308;">₹${totalTax.toLocaleString("en-IN")}</strong>
+        </div>
+        ${order.discount ? `
+        <div class="tax-row" style="color: #34d399;">
+          <span>Privilege Discount:</span>
+          <strong>-₹${order.discount.toLocaleString("en-IN")}</strong>
+        </div>` : ''}
+        <div class="tax-row">
+          <span>Shipping & Climate Care Handling:</span>
+          <strong style="color: #34d399;">${order.shippingCost === 0 ? "FREE (COMPLIMENTARY)" : `₹${order.shippingCost}`}</strong>
+        </div>
+        <div class="tax-row total">
+          <span>Grand Total (Net Amount):</span>
+          <span style="color: #eab308;">₹${order.grandTotal.toLocaleString("en-IN")}</span>
+        </div>
+        ${order.advancePaid ? `
+        <div class="tax-row" style="margin-top: 8px; color: #34d399;">
+          <span>Advance Security Deposit Paid Online:</span>
+          <strong>₹${order.advancePaid.toLocaleString("en-IN")}</strong>
+        </div>` : ''}
+        ${order.balanceDue ? `
+        <div class="tax-row" style="color: #fbbf24; font-weight: 700;">
+          <span>Balance Payable on Delivery (Doorstep):</span>
+          <strong>₹${order.balanceDue.toLocaleString("en-IN")}</strong>
+        </div>` : ''}
+      </div>
+
+      <div style="text-align: center; margin: 24px 0 10px 0;">
+        <a href="http://localhost:3000/account/orders" class="btn">View & Download Official Invoice</a>
+      </div>
+    </div>
+    <div class="footer">
+      WEALTHY STYLE Luxury Atelier • CIN: U18101DL2024PTC392810<br/>
+      Need tax or billing assistance? Contact: <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37;">concierge@wealthstyle.luxury</a><br/>
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+
+

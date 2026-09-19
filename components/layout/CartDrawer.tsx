@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -21,6 +22,7 @@ import { formatPrice } from "@/lib/utils/currency";
 import { Button } from "@/components/ui/button";
 
 export function CartDrawer() {
+  const pathname = usePathname();
   const {
     items,
     isCartDrawerOpen,
@@ -35,6 +37,10 @@ export function CartDrawer() {
   } = useCartStore();
 
   const { addItem: addToWishlist } = useWishlistStore();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const subtotal = getSubtotal();
   const discount = getDiscountAmount();

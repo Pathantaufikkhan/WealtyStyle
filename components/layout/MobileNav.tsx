@@ -33,12 +33,22 @@ interface MobileNavProps {
 
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { getItemCount, toggleCartDrawer } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
   const { user, isAuthenticated, logout } = useAuthStore();
 
-  const cartCount = getItemCount();
-  const wishlistCount = wishlistItems.length;
+  const cartCount = mounted ? getItemCount() : 0;
+  const wishlistCount = mounted ? wishlistItems.length : 0;
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const categories = [
     { name: "Home", href: "/", icon: Home },

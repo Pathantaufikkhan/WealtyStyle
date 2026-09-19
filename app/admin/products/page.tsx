@@ -20,6 +20,7 @@ import { formatPrice } from "@/lib/utils/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUploader } from "@/components/ui/ImageUploader";
 import { Product, CategorySlug } from "@/types";
 import { toast } from "sonner";
 
@@ -39,11 +40,27 @@ export default function AdminProductsPage() {
     price: 4999,
     originalPrice: 7999,
     stockCount: 20,
-    imageUrl: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop",
+    imageUrl: "",
     description: "",
     isFeatured: true,
     isBestSeller: false,
     isNewArrival: true,
+  });
+
+  // Edit product form state
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    tagline: "",
+    brand: "",
+    category: "sunglasses" as CategorySlug,
+    price: 0,
+    originalPrice: 0,
+    stockCount: 0,
+    imageUrl: "",
+    description: "",
+    isFeatured: false,
+    isBestSeller: false,
+    isNewArrival: false,
   });
 
   const filteredProducts = products.filter((p) => {
@@ -53,6 +70,63 @@ export default function AdminProductsPage() {
     const matchesCat = categoryFilter === "all" || p.category === categoryFilter;
     return matchesSearch && matchesCat;
   });
+
+  const handleOpenEditModal = (prod: Product) => {
+    setEditingProduct(prod);
+    setEditFormData({
+      name: prod.name,
+      tagline: prod.tagline || "",
+      brand: prod.brand,
+      category: prod.category,
+      price: prod.price,
+      originalPrice: prod.originalPrice || prod.price,
+      stockCount: prod.stockCount || 0,
+      imageUrl: prod.images?.[0] || "",
+      description: prod.description || "",
+      isFeatured: !!prod.isFeatured,
+      isBestSeller: !!prod.isBestSeller,
+      isNewArrival: !!prod.isNewArrival,
+    });
+  };
+
+  const handleUpdateProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    if (!editFormData.name || !editFormData.price) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+
+    const discountPercentage = Math.round(
+      ((editFormData.originalPrice - editFormData.price) / editFormData.originalPrice) * 100
+    );
+
+    const updatedImages = editFormData.imageUrl
+      ? [editFormData.imageUrl, ...(editingProduct.images?.slice(1) || [])]
+      : editingProduct.images;
+
+    updateProduct(editingProduct.id, {
+      name: editFormData.name,
+      tagline: editFormData.tagline,
+      brand: editFormData.brand,
+      category: editFormData.category,
+      price: Number(editFormData.price),
+      originalPrice: Number(editFormData.originalPrice),
+      discountPercentage: Math.max(0, discountPercentage),
+      stockCount: Number(editFormData.stockCount),
+      inStock: Number(editFormData.stockCount) > 0,
+      images: updatedImages,
+      description: editFormData.description,
+      shortDescription: editFormData.description.substring(0, 100),
+      isFeatured: editFormData.isFeatured,
+      isBestSeller: editFormData.isBestSeller,
+      isNewArrival: editFormData.isNewArrival,
+    });
+
+    toast.success(`Updated "${editFormData.name}" successfully!`);
+    setEditingProduct(null);
+  };
 
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +138,8 @@ export default function AdminProductsPage() {
     const discountPercentage = Math.round(
       ((formData.originalPrice - formData.price) / formData.originalPrice) * 100
     );
+
+    const productImage = formData.imageUrl || "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop";
 
     const newProd: Product = {
       id: `prod-custom-${Date.now()}`,
@@ -77,7 +153,7 @@ export default function AdminProductsPage() {
       discountPercentage: Math.max(0, discountPercentage),
       rating: 5.0,
       reviewsCount: 1,
-      images: [formData.imageUrl],
+      images: [productImage],
       description: formData.description,
       shortDescription: formData.description.substring(0, 100),
       isFeatured: formData.isFeatured,
@@ -117,7 +193,7 @@ export default function AdminProductsPage() {
       price: 4999,
       originalPrice: 7999,
       stockCount: 20,
-      imageUrl: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop",
+      imageUrl: "",
       description: "",
       isFeatured: true,
       isBestSeller: false,
@@ -197,12 +273,19 @@ export default function AdminProductsPage() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="relative h-12 w-12 rounded-md overflow-hidden bg-zinc-950 border border-zinc-800 flex-shrink-0">
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
+                        {product.images?.[0] ? (
+                          <Image
+                            src={product.images[0]}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            unoptimized={product.images[0]?.startsWith("data:")}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-zinc-600">
+                            <Package className="h-5 w-5" />
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h4 className="font-semibold text-white">{product.name}</h4>
@@ -257,6 +340,14 @@ export default function AdminProductsPage() {
 
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleOpenEditModal(product)}
+                        className="p-1.5 rounded bg-zinc-800 hover:bg-gold-500 hover:text-zinc-950 text-zinc-300 transition-colors"
+                        title="Edit Product & Photos"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+
                       <Link
                         href={`/product/${product.slug}`}
                         target="_blank"
@@ -286,6 +377,147 @@ export default function AdminProductsPage() {
           </table>
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setEditingProduct(null)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          />
+
+          <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-6 sm:p-8 z-10 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gold-400">
+                  Update Creation
+                </span>
+                <h3 className="font-serif text-lg font-bold text-white uppercase tracking-wider">
+                  Edit Product & Photograph
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="p-1 rounded-full text-zinc-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProduct} className="space-y-4 text-xs">
+              <Input
+                label="Product Name"
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                required
+              />
+
+              <Input
+                label="Tagline / Short Hook"
+                value={editFormData.tagline}
+                onChange={(e) => setEditFormData({ ...editFormData, tagline: e.target.value })}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-300">
+                    Category
+                  </label>
+                  <select
+                    value={editFormData.category}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        category: e.target.value as CategorySlug,
+                      })
+                    }
+                    className="w-full h-11 px-3 rounded-sm border border-zinc-700 bg-zinc-950 text-white text-xs focus:outline-none focus:border-gold-500"
+                  >
+                    <option value="sunglasses">Sunglasses</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="watches">Watches</option>
+                  </select>
+                </div>
+
+                <Input
+                  label="Brand Name"
+                  value={editFormData.brand}
+                  onChange={(e) => setEditFormData({ ...editFormData, brand: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <Input
+                  label="Selling Price (₹)"
+                  type="number"
+                  value={editFormData.price}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, price: Number(e.target.value) })
+                  }
+                  required
+                />
+                <Input
+                  label="Original MRP (₹)"
+                  type="number"
+                  value={editFormData.originalPrice}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      originalPrice: Number(e.target.value),
+                    })
+                  }
+                  required
+                />
+                <Input
+                  label="Stock Units"
+                  type="number"
+                  value={editFormData.stockCount}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      stockCount: Number(e.target.value),
+                    })
+                  }
+                  required
+                />
+              </div>
+
+              {/* Photo Uploader Component */}
+              <ImageUploader
+                label="Product Photograph (Upload from PC or URL)"
+                value={editFormData.imageUrl}
+                onChange={(newUrl) => setEditFormData({ ...editFormData, imageUrl: newUrl })}
+              />
+
+              <Textarea
+                label="Full Editorial Description"
+                value={editFormData.description}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, description: e.target.value })
+                }
+                rows={3}
+                placeholder="Detailed craft description, materials, and origin..."
+                required
+              />
+
+              <div className="flex gap-4 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingProduct(null)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="gold" className="flex-1">
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
@@ -326,7 +558,7 @@ export default function AdminProductsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">
+                  <label className="text-[11px] font-semibold uppercase tracking-widest text-zinc-300">
                     Category
                   </label>
                   <select
@@ -337,7 +569,7 @@ export default function AdminProductsPage() {
                         category: e.target.value as CategorySlug,
                       })
                     }
-                    className="w-full h-11 px-3 rounded-sm border border-zinc-800 bg-zinc-950 text-white text-xs"
+                    className="w-full h-11 px-3 rounded-sm border border-zinc-700 bg-zinc-950 text-white text-xs focus:outline-none focus:border-gold-500"
                   >
                     <option value="sunglasses">Sunglasses</option>
                     <option value="shoes">Shoes</option>
@@ -389,12 +621,11 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              <Input
-                label="Product Image URL (High-Res)"
+              {/* Photo Uploader Component */}
+              <ImageUploader
+                label="Product Photograph (Upload from PC or URL)"
                 value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-                required
+                onChange={(newUrl) => setFormData({ ...formData, imageUrl: newUrl })}
               />
 
               <Textarea
@@ -428,3 +659,4 @@ export default function AdminProductsPage() {
     </div>
   );
 }
+

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Package, Truck, CheckCircle2, Clock, ChevronDown, Download, AlertCircle } from "lucide-react";
 import { useStoreData } from "@/lib/store/useStoreData";
 import { formatPrice } from "@/lib/utils/currency";
+import { downloadOrderInvoicePDF } from "@/lib/utils/invoice";
 import { Button } from "@/components/ui/button";
 
 export default function AccountOrdersPage() {
@@ -181,10 +182,10 @@ export default function AccountOrdersPage() {
                       </div>
 
                       <Button
-                        variant="outline"
+                        variant="gold"
                         size="sm"
-                        onClick={() => alert(`Downloaded invoice PDF for ${order.orderNumber}`)}
-                        className="flex items-center gap-1.5 text-xs whitespace-nowrap"
+                        onClick={() => downloadOrderInvoicePDF(order)}
+                        className="flex items-center gap-1.5 text-xs whitespace-nowrap font-bold uppercase tracking-wider shadow-sm"
                       >
                         <Download className="h-3.5 w-3.5" />
                         <span>Download Tax Invoice</span>

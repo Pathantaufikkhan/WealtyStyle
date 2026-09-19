@@ -181,6 +181,13 @@ export interface UserProfile {
   role: 'customer' | 'admin';
   savedAddresses: ShippingAddress[];
   createdAt: string;
+  // Valued Client Membership Fields
+  isValuedMember?: boolean;
+  membershipTier?: 'standard' | 'valued_client';
+  membershipGrantedAt?: string;
+  membershipMethod?: 'purchased' | 'auto_5_orders';
+  notifiedMilestone3?: boolean;
+  notifiedMilestone5?: boolean;
 }
 
 export interface CategoryMeta {

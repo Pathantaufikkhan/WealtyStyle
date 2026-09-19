@@ -13,6 +13,12 @@ export interface RegisteredAccount {
   avatarUrl?: string;
   savedAddresses: ShippingAddress[];
   createdAt: string;
+  isValuedMember?: boolean;
+  membershipTier?: 'standard' | 'valued_client';
+  membershipGrantedAt?: string;
+  membershipMethod?: 'purchased' | 'auto_5_orders';
+  notifiedMilestone3?: boolean;
+  notifiedMilestone5?: boolean;
 }
 
 interface AuthState {
@@ -40,6 +46,8 @@ interface AuthState {
   logout: () => void;
   elevateToAdmin: () => void;
   verifyAdminPasskey: (passkey: string) => boolean;
+  grantValuedMembership: (method: 'purchased' | 'auto_5_orders') => void;
+  setMilestoneNotified: (milestone: 3 | 5) => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   updateRecoveryEmail: (recoveryEmail: string) => { success: boolean; error?: string };
   resetUserPassword: (email: string, newPassword: string) => {
@@ -164,6 +172,12 @@ export const useAuthStore = create<AuthState>()(
           avatarUrl: foundAccount.avatarUrl,
           savedAddresses: foundAccount.savedAddresses,
           createdAt: foundAccount.createdAt,
+          isValuedMember: foundAccount.isValuedMember || false,
+          membershipTier: foundAccount.membershipTier || 'standard',
+          membershipGrantedAt: foundAccount.membershipGrantedAt,
+          membershipMethod: foundAccount.membershipMethod,
+          notifiedMilestone3: foundAccount.notifiedMilestone3,
+          notifiedMilestone5: foundAccount.notifiedMilestone5,
         };
 
         const isAdmin = foundAccount.role === 'admin';
@@ -363,6 +377,55 @@ export const useAuthStore = create<AuthState>()(
           return true;
         }
         return false;
+      },
+
+      grantValuedMembership: (method: 'purchased' | 'auto_5_orders') => {
+        set((state) => {
+          if (!state.user) return state;
+          const updatedUser: UserProfile = {
+            ...state.user,
+            isValuedMember: true,
+            membershipTier: 'valued_client',
+            membershipGrantedAt: new Date().toISOString(),
+            membershipMethod: method,
+          };
+          const updatedAccounts = state.registeredAccounts.map((acc) =>
+            acc.id === updatedUser.id
+              ? {
+                  ...acc,
+                  isValuedMember: true,
+                  membershipTier: 'valued_client' as const,
+                  membershipGrantedAt: updatedUser.membershipGrantedAt,
+                  membershipMethod: method,
+                }
+              : acc
+          );
+          return {
+            user: updatedUser,
+            registeredAccounts: updatedAccounts,
+          };
+        });
+      },
+
+      setMilestoneNotified: (milestone: 3 | 5) => {
+        set((state) => {
+          if (!state.user) return state;
+          const patch =
+            milestone === 3
+              ? { notifiedMilestone3: true }
+              : { notifiedMilestone5: true };
+          const updatedUser: UserProfile = {
+            ...state.user,
+            ...patch,
+          };
+          const updatedAccounts = state.registeredAccounts.map((acc) =>
+            acc.id === updatedUser.id ? { ...acc, ...patch } : acc
+          );
+          return {
+            user: updatedUser,
+            registeredAccounts: updatedAccounts,
+          };
+        });
       },
 
       updateProfile: (data) => {

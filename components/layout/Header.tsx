@@ -58,6 +58,11 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Do not render storefront consumer header on admin portal pages
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const navLinks = [
     { name: "Home", href: "/" },
     {
