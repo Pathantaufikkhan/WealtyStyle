@@ -214,7 +214,6 @@ export function CinematicFilmShowcase() {
                   src={currentScene.image}
                   alt={currentScene.title}
                   fill
-                  priority
                   sizes="(max-width: 1280px) 100vw, 1200px"
                   className="object-cover object-center brightness-[0.52] contrast-[1.1] group-hover:scale-105 transition-transform duration-1000 ease-out"
                 />

@@ -8,6 +8,11 @@ export function CinematicAmbientLight() {
   const rafId = useRef<number | null>(null);
 
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
+    if (reducedMotion || coarsePointer) return;
+
     const updateGlow = () => {
       if (glowRef.current) {
         glowRef.current.style.transform = `translate3d(${posRef.current.x - 300}px, ${posRef.current.y - 300}px, 0)`;

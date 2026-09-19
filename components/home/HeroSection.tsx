@@ -93,7 +93,7 @@ export function HeroSection() {
             src={scene.image}
             alt={scene.titlePrimary}
             fill
-            priority
+            priority={currentIdx === 0}
             sizes="100vw"
             className="object-cover object-center brightness-[0.45] contrast-[1.1]"
           />
