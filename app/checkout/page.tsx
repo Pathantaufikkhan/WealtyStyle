@@ -221,6 +221,24 @@ export default function CheckoutPage() {
       addOrder(finalOrder);
       clearCart();
 
+      // Sync Order & Order Items directly to Supabase PostgreSQL Database
+      try {
+        fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: finalOrder }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              console.log("Order saved to Supabase:", data);
+            }
+          })
+          .catch((e) => console.error("Supabase order sync failed:", e));
+      } catch (err) {
+        console.error("Supabase sync error:", err);
+      }
+
       // Send Official GST Tax Invoice & Order Receipt Email to Customer Gmail
       try {
         fetch("/api/orders/send-invoice", {

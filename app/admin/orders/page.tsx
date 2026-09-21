@@ -92,23 +92,23 @@ export default function AdminOrdersPage() {
       {/* Orders Table */}
       <div className="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[1050px]">
             <thead className="bg-zinc-950 text-zinc-400 uppercase tracking-wider text-[10px] border-b border-zinc-800">
               <tr>
-                <th className="p-4">Order Ref</th>
-                <th className="p-4">Customer</th>
-                <th className="p-4">Date</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Total</th>
-                <th className="p-4">Payment</th>
-                <th className="p-4">Status Pipeline</th>
-                <th className="p-4 text-right">Tax Invoice</th>
+                <th className="p-4 whitespace-nowrap">Order Ref</th>
+                <th className="p-4 whitespace-nowrap">Customer</th>
+                <th className="p-4 whitespace-nowrap">Date</th>
+                <th className="p-4 whitespace-nowrap">Items</th>
+                <th className="p-4 whitespace-nowrap">Total</th>
+                <th className="p-4 whitespace-nowrap">Payment</th>
+                <th className="p-4 whitespace-nowrap">Status Pipeline</th>
+                <th className="p-4 text-right whitespace-nowrap">Tax Invoice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800 text-zinc-300">
               {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-zinc-800/40 transition-colors">
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span className="font-mono font-bold text-white block">
                       #{order.orderNumber}
                     </span>
@@ -117,31 +117,31 @@ export default function AdminOrdersPage() {
                     </span>
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <strong className="text-white block">{order.customerName}</strong>
                     <span className="text-[10px] text-zinc-400">{order.customerEmail}</span>
                   </td>
 
-                  <td className="p-4 text-zinc-400">
+                  <td className="p-4 text-zinc-400 whitespace-nowrap">
                     {new Date(order.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 max-w-[200px]">
                     <span className="font-semibold text-white">
                       {order.items.length} Products
                     </span>
-                    <p className="text-[10px] text-zinc-500 truncate max-w-[150px]">
+                    <p className="text-[10px] text-zinc-400 truncate max-w-[180px]" title={order.items.map((i) => i.productName).join(", ")}>
                       {order.items.map((i) => i.productName).join(", ")}
                     </p>
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <strong className="text-gold-400 font-bold">
                       {formatPrice(order.grandTotal)}
                     </strong>
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold block w-fit mb-1">
                       {order.paymentMethod === "Advance_COD" ? "Advance COD" : order.paymentMethod} • {order.paymentStatus}
                     </span>
@@ -152,12 +152,21 @@ export default function AdminOrdersPage() {
                     )}
                   </td>
 
-                  <td className="p-4">
+                  <td className="p-4 whitespace-nowrap">
                     <select
                       value={order.orderStatus}
                       onChange={(e) => {
                         const newStatus = e.target.value as OrderStatus;
                         updateOrderStatus(order.id, newStatus);
+                        fetch("/api/orders", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            orderNumber: order.orderNumber,
+                            orderId: order.id,
+                            status: newStatus,
+                          }),
+                        }).catch((err) => console.error("Supabase order status update error:", err));
                         toast.success(`Updated order #${order.orderNumber} status to "${newStatus}"`);
                       }}
                       className="h-8 px-2.5 rounded bg-zinc-950 border border-zinc-700 text-gold-400 font-semibold text-xs focus:outline-none focus:border-gold-500"
@@ -170,15 +179,15 @@ export default function AdminOrdersPage() {
                     </select>
                   </td>
 
-                  <td className="p-4 text-right">
+                  <td className="p-4 text-right whitespace-nowrap">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => downloadOrderInvoicePDF(order)}
-                      className="text-[11px] h-8 px-2.5 flex items-center gap-1.5 border-zinc-700 hover:border-gold-500 hover:text-gold-400"
+                      className="text-[11px] h-8 px-3 inline-flex items-center gap-1.5 border-zinc-700 hover:border-gold-500 hover:text-gold-400 text-zinc-200"
                     >
-                      <Download className="h-3 w-3" />
-                      <span>Invoice</span>
+                      <Download className="h-3.5 w-3.5 text-gold-400" />
+                      <span>Tax Invoice</span>
                     </Button>
                   </td>
                 </tr>

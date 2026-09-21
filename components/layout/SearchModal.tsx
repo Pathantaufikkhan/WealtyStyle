@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, TrendingUp, Sparkles, ArrowRight, Tag } from "lucide-react";
-import { products } from "@/lib/data/products";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { formatPrice } from "@/lib/utils/currency";
 import { Product } from "@/types";
 
@@ -26,6 +26,7 @@ const popularSearches = [
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const router = useRouter();
+  const { products } = useStoreData();
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([
     "Aviator",
@@ -61,7 +62,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         );
       })
       .slice(0, 6);
-  }, [query]);
+  }, [query, products]);
 
   const handleSearchSubmit = (searchQuery: string) => {
     if (!searchQuery.trim()) return;

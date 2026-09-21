@@ -4,13 +4,18 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, Timer, Copy, CheckCircle2, ArrowRight } from "lucide-react";
-import { products } from "@/lib/data/products";
-import { initialCoupons } from "@/lib/data/initialStore";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { formatPrice } from "@/lib/utils/currency";
 import { toast } from "sonner";
 
 export default function OffersPage() {
+  const { products, coupons, syncWithSupabase } = useStoreData();
+
+  useEffect(() => {
+    syncWithSupabase();
+  }, [syncWithSupabase]);
+
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({
     hours: 18,

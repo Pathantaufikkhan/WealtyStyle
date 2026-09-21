@@ -183,6 +183,25 @@ export default function AdminProductsPage() {
     };
 
     addProduct(newProd);
+
+    // Sync directly to Supabase PostgreSQL Database
+    try {
+      fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product: newProd }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            console.log("Product saved to Supabase:", data);
+          }
+        })
+        .catch((e) => console.error("Supabase product sync failed:", e));
+    } catch (err) {
+      console.error("Supabase product sync error:", err);
+    }
+
     toast.success(`Published new creation "${newProd.name}" to catalog!`);
     setIsAddModalOpen(false);
     setFormData({
@@ -361,6 +380,11 @@ export default function AdminProductsPage() {
                         onClick={() => {
                           if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
                             deleteProduct(product.id);
+                            fetch("/api/products", {
+                              method: "DELETE",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ slug: product.slug, id: product.id }),
+                            }).catch((e) => console.error("Supabase product delete failed:", e));
                             toast.info(`Deleted ${product.name}`);
                           }
                         }}

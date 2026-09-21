@@ -916,12 +916,12 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
     <tr style="border-bottom: 1px solid #27272a;">
       <td style="padding: 12px 8px; text-align: center; color: #a1a1aa; font-size: 11px;">${idx + 1}</td>
       <td style="padding: 12px 8px; color: #f4f4f5; font-size: 12px;">
-        <strong style="color: #ffffff;">${item.productName}</strong><br/>
-        <span style="font-size: 10px; color: #a1a1aa;">HSN: ${item.category === "sunglasses" ? "90041000" : item.category === "watches" ? "91021100" : "64039190"} ${item.selectedColor ? `• Color: ${item.selectedColor}` : ""} ${item.selectedSize ? `• Size: ${item.selectedSize}` : ""}</span>
+        <strong style="color: #ffffff; font-size: 13px;">${item.productName}</strong><br/>
+        <span style="font-size: 10px; color: #a1a1aa; line-height: 1.4; display: inline-block; margin-top: 2px;">HSN: ${item.category === "sunglasses" ? "90041000" : item.category === "watches" ? "91021100" : "64039190"} ${item.selectedColor ? `• Color: ${item.selectedColor}` : ""} ${item.selectedSize ? `• Size: ${item.selectedSize}` : ""}</span>
       </td>
-      <td style="padding: 12px 8px; text-align: center; color: #ffffff; font-size: 12px;">${item.quantity}</td>
-      <td style="padding: 12px 8px; text-align: right; color: #a1a1aa; font-size: 12px;">₹${item.price.toLocaleString("en-IN")}</td>
-      <td style="padding: 12px 8px; text-align: right; color: #eab308; font-weight: 700; font-size: 12px;">₹${(item.price * item.quantity).toLocaleString("en-IN")}</td>
+      <td style="padding: 12px 8px; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600;">${item.quantity}</td>
+      <td style="padding: 12px 8px; text-align: right; color: #d4d4d8; font-size: 12px;">₹${item.price.toLocaleString("en-IN")}</td>
+      <td style="padding: 12px 8px; text-align: right; color: #eab308; font-weight: 700; font-size: 13px;">₹${(item.price * item.quantity).toLocaleString("en-IN")}</td>
     </tr>
   `
     )
@@ -980,36 +980,35 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
       background: rgba(212, 175, 55, 0.15);
       border: 1px solid rgba(212, 175, 55, 0.3);
       color: #eab308;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 20px;
       margin-bottom: 16px;
     }
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+    .meta-box-table {
+      width: 100%;
       background: #09090b;
       border: 1px solid #27272a;
       border-radius: 12px;
-      padding: 16px;
       margin: 18px 0;
       font-size: 12px;
     }
     .meta-col {
       line-height: 1.6;
+      color: #e4e4e7;
+      font-size: 12px;
     }
     .meta-label {
-      color: #a1a1aa;
-      font-size: 10px;
+      color: #eab308;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       display: block;
-      font-weight: 700;
-      margin-bottom: 2px;
+      font-weight: 800;
+      margin-bottom: 6px;
     }
     .table-container {
       width: 100%;
@@ -1019,37 +1018,21 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
     }
     .table-header th {
       background: #09090b;
-      color: #a1a1aa;
+      color: #d4af37;
       font-size: 10px;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       padding: 10px 8px;
       border-bottom: 1px solid #3f3f46;
     }
-    .tax-breakdown {
+    .tax-breakdown-table {
+      width: 100%;
       background: #09090b;
       border: 1px solid #27272a;
       border-radius: 12px;
-      padding: 18px;
       margin: 20px 0;
       font-size: 12px;
-    }
-    .tax-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      color: #a1a1aa;
-    }
-    .tax-row strong {
-      color: #f4f4f5;
-    }
-    .tax-row.total {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #3f3f46;
-      font-size: 15px;
-      font-weight: 800;
-      color: #ffffff;
     }
     .btn {
       display: inline-block;
@@ -1083,38 +1066,44 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
     </div>
     <div class="content">
       <div class="inv-badge">Tax Invoice: ${invoiceNumber}</div>
-      <h2 style="font-size: 20px; color: #ffffff; margin: 0 0 8px 0;">
+      <h2 style="font-size: 20px; color: #ffffff; margin: 0 0 8px 0; font-weight: 700;">
         Thank You for Your Acquisition
       </h2>
-      <p style="font-size: 13px; color: #a1a1aa; margin: 0 0 16px 0; line-height: 1.5;">
-        Dear <strong>${order.customerName || "Valued Patron"}</strong>, your order <strong style="color: #eab308;">#${order.orderNumber}</strong> has been successfully confirmed. Please find your itemized GST Tax Invoice below:
+      <p style="font-size: 13px; color: #d4d4d8; margin: 0 0 16px 0; line-height: 1.6;">
+        Dear <strong style="color: #ffffff;">${order.customerName || "Valued Patron"}</strong>, your order <strong style="color: #eab308;">#${order.orderNumber}</strong> has been successfully confirmed. Please find your itemized GST Tax Invoice below:
       </p>
 
-      <div class="meta-grid">
-        <div class="meta-col">
-          <span class="meta-label">Invoice & Order Details</span>
-          <strong>Invoice No:</strong> ${invoiceNumber}<br/>
-          <strong>Date:</strong> ${invoiceDate}<br/>
-          <strong>Payment Method:</strong> ${order.paymentMethod}<br/>
-          <strong>GSTIN:</strong> 07AAACW8891P1Z9
-        </div>
-        <div class="meta-col">
-          <span class="meta-label">Billed & Shipped To</span>
-          <strong>${order.shippingAddress?.fullName || order.customerName}</strong><br/>
-          ${order.shippingAddress?.houseFlat || ""}, ${order.shippingAddress?.street || ""}<br/>
-          ${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} - ${order.shippingAddress?.pincode || ""}<br/>
-          Phone: ${order.customerPhone || order.shippingAddress?.phone || "N/A"}
-        </div>
-      </div>
+      <!-- Meta Grid Details Table -->
+      <table class="meta-box-table" cellpadding="14" cellspacing="0" style="width: 100%; background-color: #09090b; border: 1px solid #27272a; border-radius: 12px; margin: 18px 0; font-size: 12px;">
+        <tr>
+          <td class="meta-col" style="width: 50%; vertical-align: top; border-right: 1px solid #27272a; padding: 14px; color: #e4e4e7; line-height: 1.7; font-size: 12px;">
+            <span class="meta-label" style="color: #eab308; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; display: block; font-weight: 800; margin-bottom: 8px;">Invoice & Order Details</span>
+            <span style="color: #a1a1aa; font-size: 12px;">Invoice No:</span> <strong style="color: #ffffff; font-size: 12px;">${invoiceNumber}</strong><br/>
+            <span style="color: #a1a1aa; font-size: 12px;">Date:</span> <strong style="color: #ffffff; font-size: 12px;">${invoiceDate}</strong><br/>
+            <span style="color: #a1a1aa; font-size: 12px;">Payment Method:</span> <strong style="color: #ffffff; font-size: 12px;">${order.paymentMethod === "Advance_COD" ? "Advance COD" : order.paymentMethod}</strong><br/>
+            <span style="color: #a1a1aa; font-size: 12px;">GSTIN:</span> <strong style="color: #ffffff; font-size: 12px;">07AAACW8891P1Z9</strong>
+          </td>
+          <td class="meta-col" style="width: 50%; vertical-align: top; padding: 14px; color: #e4e4e7; line-height: 1.7; font-size: 12px;">
+            <span class="meta-label" style="color: #eab308; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; display: block; font-weight: 800; margin-bottom: 8px;">Billed & Shipped To</span>
+            <strong style="color: #ffffff; font-size: 13px; display: block; margin-bottom: 2px;">${order.shippingAddress?.fullName || order.customerName}</strong>
+            <span style="color: #d4d4d8; font-size: 12px;">
+              ${order.shippingAddress?.houseFlat || ""}${order.shippingAddress?.houseFlat ? ", " : ""}${order.shippingAddress?.street || ""}<br/>
+              ${order.shippingAddress?.city || ""}${order.shippingAddress?.city ? ", " : ""}${order.shippingAddress?.state || ""} - ${order.shippingAddress?.pincode || ""}
+            </span><br/>
+            <span style="color: #a1a1aa; font-size: 12px;">Phone:</span> <strong style="color: #ffffff; font-size: 12px;">${order.customerPhone || order.shippingAddress?.phone || "N/A"}</strong>
+          </td>
+        </tr>
+      </table>
 
-      <table class="table-container">
+      <!-- Items Table -->
+      <table class="table-container" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px;">
         <thead>
           <tr class="table-header">
-            <th style="width: 30px; text-align: center;">#</th>
-            <th style="text-align: left;">Item Description</th>
-            <th style="width: 40px; text-align: center;">Qty</th>
-            <th style="width: 80px; text-align: right;">Unit Price</th>
-            <th style="width: 90px; text-align: right;">Total</th>
+            <th style="width: 30px; text-align: center; background-color: #09090b; color: #d4af37; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; border-bottom: 1px solid #3f3f46;">#</th>
+            <th style="text-align: left; background-color: #09090b; color: #d4af37; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; border-bottom: 1px solid #3f3f46;">Item Description</th>
+            <th style="width: 40px; text-align: center; background-color: #09090b; color: #d4af37; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; border-bottom: 1px solid #3f3f46;">Qty</th>
+            <th style="width: 80px; text-align: right; background-color: #09090b; color: #d4af37; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; border-bottom: 1px solid #3f3f46;">Unit Price</th>
+            <th style="width: 90px; text-align: right; background-color: #09090b; color: #d4af37; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 10px 8px; border-bottom: 1px solid #3f3f46;">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -1122,47 +1111,48 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
         </tbody>
       </table>
 
-      <div class="tax-breakdown">
-        <div class="tax-row">
-          <span>Total Taxable Amount:</span>
-          <strong>₹${taxableAmount.toLocaleString("en-IN")}</strong>
-        </div>
-        <div class="tax-row">
-          <span>CGST (9.00%):</span>
-          <strong>₹${cgst.toLocaleString("en-IN")}</strong>
-        </div>
-        <div class="tax-row">
-          <span>SGST (9.00%):</span>
-          <strong>₹${sgst.toLocaleString("en-IN")}</strong>
-        </div>
-        <div class="tax-row">
-          <span>Total Integrated Taxes (18% Included):</span>
-          <strong style="color: #eab308;">₹${totalTax.toLocaleString("en-IN")}</strong>
-        </div>
+      <!-- Tax Breakdown Table -->
+      <table class="tax-breakdown-table" cellpadding="10" cellspacing="0" style="width: 100%; background-color: #09090b; border: 1px solid #27272a; border-radius: 12px; margin: 20px 0; font-size: 12px;">
+        <tr>
+          <td style="color: #a1a1aa; padding: 8px 12px; font-size: 12px;">Total Taxable Amount:</td>
+          <td style="text-align: right; color: #ffffff; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${taxableAmount.toLocaleString("en-IN")}</td>
+        </tr>
+        <tr>
+          <td style="color: #a1a1aa; padding: 8px 12px; font-size: 12px;">CGST (9.00%):</td>
+          <td style="text-align: right; color: #ffffff; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${cgst.toLocaleString("en-IN")}</td>
+        </tr>
+        <tr>
+          <td style="color: #a1a1aa; padding: 8px 12px; font-size: 12px;">SGST (9.00%):</td>
+          <td style="text-align: right; color: #ffffff; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${sgst.toLocaleString("en-IN")}</td>
+        </tr>
+        <tr>
+          <td style="color: #a1a1aa; padding: 8px 12px; font-size: 12px;">Total Integrated Taxes (18% Included):</td>
+          <td style="text-align: right; color: #eab308; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${totalTax.toLocaleString("en-IN")}</td>
+        </tr>
         ${order.discount ? `
-        <div class="tax-row" style="color: #34d399;">
-          <span>Privilege Discount:</span>
-          <strong>-₹${order.discount.toLocaleString("en-IN")}</strong>
-        </div>` : ''}
-        <div class="tax-row">
-          <span>Shipping & Climate Care Handling:</span>
-          <strong style="color: #34d399;">${order.shippingCost === 0 ? "FREE (COMPLIMENTARY)" : `₹${order.shippingCost}`}</strong>
-        </div>
-        <div class="tax-row total">
-          <span>Grand Total (Net Amount):</span>
-          <span style="color: #eab308;">₹${order.grandTotal.toLocaleString("en-IN")}</span>
-        </div>
+        <tr>
+          <td style="color: #34d399; padding: 8px 12px; font-size: 12px;">Privilege Discount:</td>
+          <td style="text-align: right; color: #34d399; font-weight: 700; padding: 8px 12px; font-size: 12px;">-₹${order.discount.toLocaleString("en-IN")}</td>
+        </tr>` : ''}
+        <tr>
+          <td style="color: #a1a1aa; padding: 8px 12px; font-size: 12px;">Shipping & Climate Care Handling:</td>
+          <td style="text-align: right; color: #34d399; font-weight: 700; padding: 8px 12px; font-size: 12px;">${order.shippingCost === 0 ? "FREE (COMPLIMENTARY)" : `₹${order.shippingCost}`}</td>
+        </tr>
+        <tr style="border-top: 1px solid #3f3f46;">
+          <td style="color: #ffffff; font-size: 14px; font-weight: 800; padding: 12px; border-top: 1px solid #3f3f46;">Grand Total (Net Amount):</td>
+          <td style="text-align: right; color: #eab308; font-size: 16px; font-weight: 800; padding: 12px; border-top: 1px solid #3f3f46;">₹${order.grandTotal.toLocaleString("en-IN")}</td>
+        </tr>
         ${order.advancePaid ? `
-        <div class="tax-row" style="margin-top: 8px; color: #34d399;">
-          <span>Advance Security Deposit Paid Online:</span>
-          <strong>₹${order.advancePaid.toLocaleString("en-IN")}</strong>
-        </div>` : ''}
+        <tr>
+          <td style="color: #34d399; padding: 8px 12px; font-size: 12px;">Advance Security Deposit Paid Online:</td>
+          <td style="text-align: right; color: #34d399; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${order.advancePaid.toLocaleString("en-IN")}</td>
+        </tr>` : ''}
         ${order.balanceDue ? `
-        <div class="tax-row" style="color: #fbbf24; font-weight: 700;">
-          <span>Balance Payable on Delivery (Doorstep):</span>
-          <strong>₹${order.balanceDue.toLocaleString("en-IN")}</strong>
-        </div>` : ''}
-      </div>
+        <tr>
+          <td style="color: #fbbf24; font-weight: 700; padding: 8px 12px; font-size: 12px;">Balance Payable on Delivery (Doorstep):</td>
+          <td style="text-align: right; color: #fbbf24; font-weight: 700; padding: 8px 12px; font-size: 12px;">₹${order.balanceDue.toLocaleString("en-IN")}</td>
+        </tr>` : ''}
+      </table>
 
       <div style="text-align: center; margin: 24px 0 10px 0;">
         <a href="http://localhost:3000/account/orders" class="btn">View & Download Official Invoice</a>
@@ -1170,7 +1160,7 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
     </div>
     <div class="footer">
       WEALTHY STYLE Luxury Atelier • CIN: U18101DL2024PTC392810<br/>
-      Need tax or billing assistance? Contact: <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37;">concierge@wealthstyle.luxury</a><br/>
+      Need tax or billing assistance? Contact: <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37; text-decoration: none;">concierge@wealthstyle.luxury</a><br/>
       &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury. All rights reserved.
     </div>
   </div>

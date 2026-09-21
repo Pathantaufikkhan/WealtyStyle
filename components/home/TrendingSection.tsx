@@ -1,13 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
-import { products } from "@/lib/data/products";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 
 export function TrendingSection() {
+  const { products, syncWithSupabase } = useStoreData();
+
+  useEffect(() => {
+    syncWithSupabase();
+  }, [syncWithSupabase]);
+
   const [activeTab, setActiveTab] = useState<"all" | "sunglasses" | "shoes" | "watches">("all");
 
   const filteredTrending = products

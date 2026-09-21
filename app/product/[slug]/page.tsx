@@ -28,17 +28,30 @@ import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils/currency";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { toast } from "sonner";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
+    slug: string;
+  }> | {
     slug: string;
   };
 }
 
 export default function ProductDetailPage({ params }: ProductPageProps) {
   const router = useRouter();
-  const product = products.find((p) => p.slug === params.slug);
+  const resolvedParams = "then" in params ? React.use(params as Promise<{ slug: string }>) : params;
+  const slug = resolvedParams.slug;
+
+  const { products: storeProducts, syncWithSupabase } = useStoreData();
+
+  React.useEffect(() => {
+    syncWithSupabase();
+  }, [syncWithSupabase]);
+
+  const allProductsList = storeProducts && storeProducts.length > 0 ? storeProducts : products;
+  const product = allProductsList.find((p) => p.slug === slug);
 
   const [selectedVariant, setSelectedVariant] = useState(
     product?.variants?.[0]
@@ -145,13 +158,21 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     },
   };
 
+  React.useEffect(() => {
+    if (!product) return;
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.text = JSON.stringify(productSchema);
+    document.head.appendChild(script);
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [product?.id, product?.slug]);
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
-
       <div className="min-h-screen bg-background py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}

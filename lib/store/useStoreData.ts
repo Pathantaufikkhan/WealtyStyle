@@ -10,6 +10,9 @@ interface StoreDataState {
   coupons: Coupon[];
   reviews: ProductReview[];
   
+  // Cloud Sync
+  syncWithSupabase: () => Promise<void>;
+
   // Product actions
   addProduct: (product: Product) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
@@ -32,11 +35,58 @@ interface StoreDataState {
 
 export const useStoreData = create<StoreDataState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       products: initialProducts,
       orders: initialOrders,
       coupons: initialCoupons,
       reviews: initialReviews,
+
+      syncWithSupabase: async () => {
+        try {
+          const res = await fetch('/api/products').then((r) => r.json()).catch(() => null);
+          if (res?.success && Array.isArray(res.products) && res.products.length > 0) {
+            const formattedSupabaseProducts: Product[] = res.products.map((p: any) => ({
+              id: p.id,
+              slug: p.slug,
+              name: p.name,
+              tagline: p.tagline || "Handcrafted Luxury",
+              brand: p.brand || "WEALTHY STYLE",
+              category: p.category_slug || "sunglasses",
+              price: Number(p.price),
+              originalPrice: Number(p.original_price || p.price),
+              discountPercentage: Number(p.discount_percentage || 0),
+              rating: Number(p.rating || 5.0),
+              reviewsCount: Number(p.reviews_count || 0),
+              description: p.description || p.name,
+              shortDescription: p.short_description || (p.description ? p.description.substring(0, 100) : p.name),
+              isFeatured: !!p.is_featured,
+              isBestSeller: !!p.is_bestseller,
+              isNewArrival: !!p.is_new_arrival,
+              inStock: p.in_stock !== false,
+              stockCount: Number(p.stock_count || 10),
+              tags: p.tags || [p.category_slug || "Luxury"],
+              materials: p.materials || ["Premium Alloy"],
+              careInstructions: p.care_instructions || [],
+              warranty: p.warranty || "2-Year International Warranty",
+              images: p.images && p.images.length > 0
+                ? p.images.map((img: any) => (typeof img === "string" ? img : img.image_url))
+                : ["https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop"],
+              createdAt: p.created_at || new Date().toISOString(),
+              variants: [],
+              specifications: [],
+              attributes: p.attributes || {},
+            }));
+
+            set((state) => {
+              const supabaseSlugs = new Set(formattedSupabaseProducts.map((p) => p.slug));
+              const remaining = state.products.filter((p) => !supabaseSlugs.has(p.slug));
+              return { products: [...formattedSupabaseProducts, ...remaining] };
+            });
+          }
+        } catch (err) {
+          console.error("Supabase products sync error:", err);
+        }
+      },
 
       addProduct: (product) => {
         set((state) => ({ products: [product, ...state.products] }));

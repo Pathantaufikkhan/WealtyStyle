@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Grid3X3, LayoutGrid, Sparkles } from "lucide-react";
 import { Product, CategorySlug } from "@/types";
 import { categoriesMeta } from "@/lib/data/products";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { ProductGrid } from "./ProductGrid";
 import { ProductFilterSidebar, FilterState } from "./ProductFilterSidebar";
 
@@ -23,9 +24,16 @@ export function CategoryCatalogView({
   customTitle,
   customDescription,
   customHeroImage,
-  allProducts,
+  allProducts: propProducts,
   initialFilterTag,
 }: CategoryCatalogViewProps) {
+  const { products: storeProducts, syncWithSupabase } = useStoreData();
+
+  useEffect(() => {
+    syncWithSupabase();
+  }, [syncWithSupabase]);
+
+  const allProducts = storeProducts && storeProducts.length > 0 ? storeProducts : propProducts;
   const categoryMeta = categorySlug ? categoriesMeta[categorySlug] : null;
 
   const [gridCols, setGridCols] = useState<3 | 4>(4);

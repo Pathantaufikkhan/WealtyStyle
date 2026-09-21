@@ -4,12 +4,13 @@ import React, { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search, ChevronRight } from "lucide-react";
-import { products } from "@/lib/data/products";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { ProductGrid } from "@/components/products/ProductGrid";
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
+  const { products } = useStoreData();
 
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
@@ -23,7 +24,7 @@ function SearchContent() {
         p.tags.some((t) => t.toLowerCase().includes(q))
       );
     });
-  }, [query]);
+  }, [query, products]);
 
   return (
     <div className="min-h-screen bg-background py-10">

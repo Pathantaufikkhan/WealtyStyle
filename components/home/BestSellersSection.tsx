@@ -4,11 +4,12 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Award, ArrowRight, Star } from "lucide-react";
-import { products } from "@/lib/data/products";
+import { useStoreData } from "@/lib/store/useStoreData";
 import { ProductCard } from "@/components/products/ProductCard";
 import { Button } from "@/components/ui/button";
 
 export function BestSellersSection() {
+  const { products } = useStoreData();
   const bestSellers = products.filter((p) => p.isBestSeller).slice(0, 4);
   const spotlightProduct = products.find((p) => p.slug === "chronos-tourbillon-automatic-skeleton") || products[0];
 
