@@ -29,6 +29,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 
+import { useStoreData } from "@/lib/store/useStoreData";
+
 export default function AdminLayout({
   children,
 }: {
@@ -36,7 +38,8 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, verifyAdminPasskey, logout } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, verifyAdminPasskey, logout, registeredAccounts } = useAuthStore();
+  const { products, orders, coupons, reviews, syncWithSupabase } = useStoreData();
   const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [passkeyInput, setPasskeyInput] = useState("");
@@ -44,7 +47,13 @@ export default function AdminLayout({
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Continuous background synchronization across the entire admin suite
+    syncWithSupabase().catch(() => null);
+    const interval = setInterval(() => {
+      syncWithSupabase().catch(() => null);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [syncWithSupabase]);
 
   const handlePasskeyUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,14 +75,33 @@ export default function AdminLayout({
     }, 400);
   };
 
-  // Nav items
+  const pendingOrdersCount = orders.filter(
+    (o) =>
+      o.orderStatus === "Pending" ||
+      o.orderStatus === "Confirmed" ||
+      o.orderStatus === "Processing" ||
+      o.orderStatus === "Out for Delivery"
+  ).length;
+
+  const totalClientsCount = new Set([
+    ...(registeredAccounts || []).map((a) => a.email.toLowerCase()),
+    ...orders.map((o) => o.customerEmail?.toLowerCase()).filter(Boolean),
+  ]).size;
+
+  // Nav items with dynamic live badges
   const adminNav = [
-    { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Products Catalog", href: "/admin/products", icon: Package },
-    { name: "Customer Orders", href: "/admin/orders", icon: ShoppingBag },
-    { name: "Coupons & Offers", href: "/admin/coupons", icon: Ticket },
-    { name: "Review Moderation", href: "/admin/reviews", icon: MessageSquare },
-    { name: "Client Directory", href: "/admin/customers", icon: Users },
+    { name: "Dashboard", href: "/admin", icon: LayoutDashboard, live: true },
+    { name: "Products Catalog", href: "/admin/products", icon: Package, badge: products.length },
+    {
+      name: "Customer Orders",
+      href: "/admin/orders",
+      icon: ShoppingBag,
+      badge: orders.length,
+      highlightBadge: pendingOrdersCount > 0 ? `${pendingOrdersCount} pending` : undefined,
+    },
+    { name: "Coupons & Offers", href: "/admin/coupons", icon: Ticket, badge: coupons.filter(c => c.isActive).length },
+    { name: "Review Moderation", href: "/admin/reviews", icon: MessageSquare, badge: reviews.length },
+    { name: "Client Directory", href: "/admin/customers", icon: Users, badge: totalClientsCount },
     { name: "Store Settings", href: "/admin/settings", icon: Settings },
   ];
 
@@ -246,14 +274,41 @@ export default function AdminLayout({
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all",
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all",
                     isActive
                       ? "bg-gold-500 text-zinc-950 font-bold shadow-md shadow-gold-500/20"
                       : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
                   )}
                 >
-                  <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span>{item.name}</span>
+                  </div>
+
+                  {item.live ? (
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  ) : item.highlightBadge ? (
+                    <span className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded font-bold uppercase",
+                      isActive
+                        ? "bg-zinc-950 text-gold-400"
+                        : "bg-gold-500/20 text-gold-400 border border-gold-500/30 animate-pulse"
+                    )}>
+                      {item.highlightBadge}
+                    </span>
+                  ) : item.badge !== undefined ? (
+                    <span className={cn(
+                      "text-[10px] px-1.5 py-0.2 rounded font-mono font-bold",
+                      isActive
+                        ? "bg-zinc-950 text-gold-400"
+                        : "bg-zinc-800 text-zinc-400"
+                    )}>
+                      {item.badge}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}

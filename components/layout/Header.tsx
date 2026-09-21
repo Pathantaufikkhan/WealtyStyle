@@ -254,18 +254,13 @@ export function Header() {
               )}
             </Link>
 
-            {/* User Account / Admin link */}
+            {/* User Account Link */}
             <Link
-              href={isAuthenticated ? (user?.role === "admin" ? "/admin" : "/account") : "/login"}
-              className="hidden sm:flex items-center gap-1.5 p-2 text-zinc-300 hover:text-gold-400 transition-colors rounded-full hover:bg-zinc-900/80"
+              href={isAuthenticated ? "/account" : "/login"}
+              className="hidden sm:flex items-center p-2 text-zinc-300 hover:text-gold-400 transition-colors rounded-full hover:bg-zinc-900/80"
               aria-label="Account"
             >
               <User className="h-5 w-5" />
-              {user?.role === "admin" && (
-                <span className="text-[9px] bg-gold-500 text-zinc-950 font-bold px-1.5 py-0.5 rounded">
-                  ADMIN
-                </span>
-              )}
             </Link>
 
             {/* Cart Drawer Trigger */}

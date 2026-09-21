@@ -43,6 +43,7 @@ export const useStoreData = create<StoreDataState>()(
 
       syncWithSupabase: async () => {
         try {
+          // 1. Sync Products
           const res = await fetch('/api/products').then((r) => r.json()).catch(() => null);
           if (res?.success && Array.isArray(res.products) && res.products.length > 0) {
             const formattedSupabaseProducts: Product[] = res.products.map((p: any) => ({
@@ -83,8 +84,55 @@ export const useStoreData = create<StoreDataState>()(
               return { products: [...formattedSupabaseProducts, ...remaining] };
             });
           }
+
+          // 2. Sync Orders in Real-Time
+          const ordersRes = await fetch('/api/orders').then((r) => r.json()).catch(() => null);
+          if (ordersRes?.success && Array.isArray(ordersRes.orders) && ordersRes.orders.length > 0) {
+            const formattedOrders: Order[] = ordersRes.orders.map((o: any) => ({
+              id: o.id,
+              orderNumber: o.order_number,
+              userId: o.user_id,
+              customerName: o.customer_name,
+              customerEmail: o.customer_email,
+              customerPhone: o.customer_phone,
+              shippingAddress: o.shipping_address || {},
+              items: Array.isArray(o.items)
+                ? o.items.map((i: any) => ({
+                    id: i.id || `item-${Math.random().toString(36).substr(2, 9)}`,
+                    productId: i.product_id,
+                    productName: i.product_name || "Luxury Item",
+                    productImage: i.product_image || "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=1000&auto=format&fit=crop",
+                    category: i.category || "sunglasses",
+                    price: Number(i.price || 0),
+                    quantity: Number(i.quantity || 1),
+                    selectedColor: i.selected_color,
+                    selectedSize: i.selected_size,
+                  }))
+                : [],
+              subtotal: Number(o.subtotal || 0),
+              discount: Number(o.discount || 0),
+              couponCode: o.coupon_code,
+              shippingCost: Number(o.shipping_cost || 0),
+              tax: Number(o.tax || 0),
+              grandTotal: Number(o.grand_total || 0),
+              paymentMethod: o.payment_method || "Razorpay",
+              paymentStatus: o.payment_status || "Paid",
+              paymentId: o.payment_id,
+              orderStatus: o.order_status || "Confirmed",
+              trackingNumber: o.tracking_number,
+              estimatedDelivery: o.estimated_delivery,
+              createdAt: o.created_at || new Date().toISOString(),
+              updatedAt: o.updated_at || new Date().toISOString(),
+            }));
+
+            set((state) => {
+              const supabaseOrderNumbers = new Set(formattedOrders.map((ord) => ord.orderNumber));
+              const remainingOrders = state.orders.filter((ord) => !supabaseOrderNumbers.has(ord.orderNumber));
+              return { orders: [...formattedOrders, ...remainingOrders] };
+            });
+          }
         } catch (err) {
-          console.error("Supabase products sync error:", err);
+          console.error("Supabase sync error:", err);
         }
       },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,13 +23,49 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { Product, CategorySlug } from "@/types";
 import { toast } from "sonner";
+import { RefreshCw, Radio } from "lucide-react";
 
 export default function AdminProductsPage() {
-  const { products, addProduct, updateProduct, deleteProduct } = useStoreData();
+  const { products, addProduct, updateProduct, deleteProduct, syncWithSupabase } = useStoreData();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+
+  // Auto-sync products continuously in real-time
+  useEffect(() => {
+    let isMounted = true;
+    const performSync = async () => {
+      try {
+        await syncWithSupabase();
+        if (isMounted) setLastSynced(new Date());
+      } catch (e) {
+        console.error("Products sync error:", e);
+      }
+    };
+
+    performSync();
+    const interval = setInterval(performSync, 12000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [syncWithSupabase]);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncWithSupabase();
+      setLastSynced(new Date());
+      toast.success("Products catalog synchronized with live database");
+    } catch (e) {
+      toast.error("Failed to sync products catalog");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // New product form state
   const [formData, setFormData] = useState({
@@ -225,23 +261,47 @@ export default function AdminProductsPage() {
       {/* Top Title & CTA */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
         <div>
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">
-            Catalog Administration
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-400">
+              Live Catalog Database
+            </span>
+            {lastSynced && (
+              <span className="text-[10px] text-zinc-500 font-mono hidden md:inline">
+                • Synced {lastSynced.toLocaleTimeString("en-IN")}
+              </span>
+            )}
+          </div>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight mt-1">
             Products Directory ({products.length})
           </h1>
         </div>
 
-        <Button
-          variant="gold"
-          size="sm"
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add New Product</span>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-gold-400 hover:border-gold-500 text-xs flex items-center gap-1.5"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-gold-400" : ""}`} />
+            <span>{isSyncing ? "Syncing..." : "Live Refresh"}</span>
+          </Button>
+
+          <Button
+            variant="gold"
+            size="sm"
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add New Product</span>
+          </Button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

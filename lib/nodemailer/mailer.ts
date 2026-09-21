@@ -1169,5 +1169,331 @@ export function generateOrderTaxInvoiceEmailHtml(order: any): string {
 `;
 }
 
+/**
+ * Generates Order Shipped / Dispatched notification email
+ */
+export function generateOrderShippedEmailHtml(
+  order: any,
+  recipientType: "customer" | "admin" = "customer"
+): string {
+  const storeUrl = process.env.NEXT_PUBLIC_STORE_URL || "http://localhost:3000";
+  const itemsHtml = (order.items || [])
+    .map(
+      (item: any) => `
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid #27272a; color: #ffffff; font-weight: 600;">
+          ${item.productName || item.name || "Luxury Item"}
+          ${item.selectedSize ? `<span style="font-size: 10px; color: #a1a1aa; display: block;">Size: ${item.selectedSize}</span>` : ""}
+          ${item.selectedColor ? `<span style="font-size: 10px; color: #a1a1aa; display: block;">Color: ${item.selectedColor}</span>` : ""}
+        </td>
+        <td style="text-align: center; padding: 10px 8px; border-bottom: 1px solid #27272a; color: #e4e4e7;">
+          ${item.quantity || 1}
+        </td>
+        <td style="text-align: right; padding: 10px 8px; border-bottom: 1px solid #27272a; color: #d4af37; font-weight: 700;">
+          ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString("en-IN")}
+        </td>
+      </tr>
+    `
+    )
+    .join("");
 
+  const isAdmin = recipientType === "admin";
 
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${isAdmin ? `[Admin Alert] Order #${order.orderNumber} Shipped` : `Your Order #${order.orderNumber} Has Been Shipped!`}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; color: #fafaf9; margin: 0; padding: 0; }
+    .wrapper { max-width: 620px; margin: 24px auto; background: #121215; border: 1px solid #27272a; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1c1917 0%, #09090b 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid #27272a; }
+    .brand { color: #d4af37; font-size: 22px; letter-spacing: 4px; font-weight: 900; text-transform: uppercase; margin: 0; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 9999px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; }
+    .content { padding: 30px 24px; }
+    .card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 18px; margin: 18px 0; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%); color: #000000 !important; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; padding: 14px 28px; border-radius: 8px; text-decoration: none; box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3); }
+    .footer { text-align: center; padding: 20px; font-size: 11px; color: #71717a; border-top: 1px solid #27272a; background: #0c0a09; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="badge">🚀 ORDER DISPATCHED & IN TRANSIT</div>
+    </div>
+    <div class="content">
+      <h2 style="font-size: 20px; color: #ffffff; margin-top: 0;">
+        ${isAdmin ? `Admin Alert: Order #${order.orderNumber} Dispatched` : `Great news, ${order.customerName || "Valued Client"}!`}
+      </h2>
+      <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6;">
+        ${
+          isAdmin
+            ? `Order <strong>#${order.orderNumber}</strong> for customer <strong>${order.customerName}</strong> (${order.customerEmail}) has been dispatched and handed over to the courier partner.`
+            : `Your bespoke acquisition <strong>#${order.orderNumber}</strong> has been carefully inspected, securely packaged in our luxury presentation box, and handed over for express priority transit.`
+        }
+      </p>
+
+      <div class="card">
+        <table style="width: 100%; font-size: 13px;">
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Order Number:</td>
+            <td style="text-align: right; color: #ffffff; font-weight: 700; font-family: monospace;">#${order.orderNumber}</td>
+          </tr>
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Courier Tracking ID:</td>
+            <td style="text-align: right; color: #60a5fa; font-weight: 700; font-family: monospace;">${order.trackingNumber || "BD-" + Math.floor(10000000 + Math.random() * 90000000)}</td>
+          </tr>
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Estimated Delivery:</td>
+            <td style="text-align: right; color: #34d399; font-weight: 700;">${order.estimatedDelivery || "Within 2-3 Business Days"}</td>
+          </tr>
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Delivery Address:</td>
+            <td style="text-align: right; color: #e4e4e7;">
+              ${order.shippingAddress?.city || "Customer Address"}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.pincode || ""}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <h3 style="font-size: 14px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 0;">
+        Items in Transit
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <thead>
+          <tr style="border-bottom: 1px solid #3f3f46; color: #a1a1aa; text-transform: uppercase; font-size: 10px;">
+            <th style="text-align: left; padding: 8px 4px;">Item</th>
+            <th style="text-align: center; padding: 8px 4px;">Qty</th>
+            <th style="text-align: right; padding: 8px 4px;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div style="text-align: center; margin: 28px 0 10px 0;">
+        <a href="${storeUrl}/account/orders" class="btn">View Live Order Tracking</a>
+      </div>
+    </div>
+    <div class="footer">
+      WEALTHY STYLE Luxury Concierge • Need help? <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37;">concierge@wealthstyle.luxury</a><br/>
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+/**
+ * Generates Out for Delivery notification email with interactive "Confirm Delivery" button
+ */
+export function generateOrderOutForDeliveryEmailHtml(
+  order: any,
+  confirmDeliveryUrl: string
+): string {
+  const itemsHtml = (order.items || [])
+    .map(
+      (item: any) => `
+      <tr>
+        <td style="padding: 8px 6px; border-bottom: 1px solid #27272a; color: #ffffff; font-weight: 600;">
+          ${item.productName || item.name || "Luxury Item"}
+        </td>
+        <td style="text-align: center; padding: 8px 6px; border-bottom: 1px solid #27272a; color: #e4e4e7;">
+          x${item.quantity || 1}
+        </td>
+        <td style="text-align: right; padding: 8px 6px; border-bottom: 1px solid #27272a; color: #d4af37; font-weight: 700;">
+          ₹${((item.price || 0) * (item.quantity || 1)).toLocaleString("en-IN")}
+        </td>
+      </tr>
+    `
+    )
+    .join("");
+
+  const isCodOrAdvance = order.paymentMethod === "Advance_COD" || order.paymentMethod === "COD";
+  const balanceDue = order.balanceDue || 0;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚚 Out for Delivery Today: Order #${order.orderNumber}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; color: #fafaf9; margin: 0; padding: 0; }
+    .wrapper { max-width: 620px; margin: 24px auto; background: #121215; border: 1px solid #27272a; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1c1917 0%, #09090b 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid #27272a; }
+    .brand { color: #d4af37; font-size: 22px; letter-spacing: 4px; font-weight: 900; text-transform: uppercase; margin: 0; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 9999px; background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.5); color: #facc15; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; }
+    .content { padding: 30px 24px; }
+    .card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 18px; margin: 18px 0; }
+    .confirm-box { background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(16, 185, 129, 0.12) 100%); border: 2px solid #d4af37; border-radius: 14px; padding: 24px 20px; text-align: center; margin: 24px 0; }
+    .confirm-btn { display: inline-block; background: #10b981; color: #ffffff !important; font-weight: 900; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; padding: 16px 32px; border-radius: 10px; text-decoration: none; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); margin-top: 14px; }
+    .footer { text-align: center; padding: 20px; font-size: 11px; color: #71717a; border-top: 1px solid #27272a; background: #0c0a09; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="badge">🚚 ARRIVING TODAY: OUT FOR DELIVERY</div>
+    </div>
+    <div class="content">
+      <h2 style="font-size: 20px; color: #ffffff; margin-top: 0; text-align: center;">
+        Your Order is Arriving Today!
+      </h2>
+      <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6; text-align: center;">
+        Dear <strong>${order.customerName || "Valued Patron"}</strong>, our courier executive is in your neighborhood and will attempt doorstep delivery today for Order <strong>#${order.orderNumber}</strong>.
+      </p>
+
+      ${
+        isCodOrAdvance && balanceDue > 0
+          ? `
+        <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 14px; margin: 16px 0; text-align: center;">
+          <span style="color: #facc15; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block;">💵 Doorstep Payment Due</span>
+          <strong style="font-size: 22px; color: #ffffff; display: block; margin-top: 4px;">₹${balanceDue.toLocaleString("en-IN")}</strong>
+          <span style="color: #a1a1aa; font-size: 11px; display: block; margin-top: 2px;">Please keep cash or UPI QR scanner ready for courier partner.</span>
+        </div>
+      `
+          : `
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; margin: 16px 0; text-align: center;">
+          <span style="color: #34d399; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✅ 100% PREPAID • ZERO DOORSTEP PAYMENT REQUIRED</span>
+        </div>
+      `
+      }
+
+      <div class="card">
+        <table style="width: 100%; font-size: 13px;">
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Order Ref:</td>
+            <td style="text-align: right; color: #ffffff; font-weight: 700; font-family: monospace;">#${order.orderNumber}</td>
+          </tr>
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Courier Tracking:</td>
+            <td style="text-align: right; color: #60a5fa; font-weight: 700; font-family: monospace;">${order.trackingNumber || "BD-" + Math.floor(10000000 + Math.random() * 90000000)}</td>
+          </tr>
+          <tr>
+            <td style="color: #a1a1aa; padding: 6px 0;">Destination:</td>
+            <td style="text-align: right; color: #e4e4e7;">
+              ${order.shippingAddress?.houseFlat || ""}, ${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.pincode || ""}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Action Confirmation Box for Customer -->
+      <div class="confirm-box">
+        <div style="font-size: 16px; font-weight: 800; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">
+          📦 Received Your Package?
+        </div>
+        <p style="color: #d4d4d8; font-size: 13px; margin: 8px auto 0 auto; max-width: 440px; line-height: 1.5;">
+          Once the courier delivers your package, please tap the button below to confirm receipt. This will automatically update your order to <strong>Delivered</strong> on our atelier portal.
+        </p>
+        <div>
+          <a href="${confirmDeliveryUrl}" class="confirm-btn">
+            ✅ I Received My Parcel
+          </a>
+        </div>
+      </div>
+
+      <h3 style="font-size: 13px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px 0;">
+        Package Contents
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+    </div>
+    <div class="footer">
+      WEALTHY STYLE Luxury Concierge • CIN: U18101DL2024PTC392810<br/>
+      Need delivery assistance? <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37;">concierge@wealthstyle.luxury</a><br/>
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+/**
+ * Generates Delivery Confirmation notification email
+ */
+export function generateOrderDeliveredEmailHtml(
+  order: any,
+  recipientType: "customer" | "admin" = "customer"
+): string {
+  const storeUrl = process.env.NEXT_PUBLIC_STORE_URL || "http://localhost:3000";
+  const isAdmin = recipientType === "admin";
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${isAdmin ? `[Admin Alert] Order #${order.orderNumber} Confirmed Delivered` : `Order #${order.orderNumber} Delivered Successfully!`}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; color: #fafaf9; margin: 0; padding: 0; }
+    .wrapper { max-width: 620px; margin: 24px auto; background: #121215; border: 1px solid #27272a; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1c1917 0%, #09090b 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid #27272a; }
+    .brand { color: #d4af37; font-size: 22px; letter-spacing: 4px; font-weight: 900; text-transform: uppercase; margin: 0; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; }
+    .content { padding: 30px 24px; text-align: center; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #aa820a 100%); color: #000000 !important; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; padding: 14px 28px; border-radius: 8px; text-decoration: none; box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3); }
+    .footer { text-align: center; padding: 20px; font-size: 11px; color: #71717a; border-top: 1px solid #27272a; background: #0c0a09; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="brand">WEALTHY STYLE</div>
+      <div class="badge">🎉 DELIVERED & CONFIRMED</div>
+    </div>
+    <div class="content">
+      <h2 style="font-size: 22px; color: #ffffff; margin-top: 0;">
+        ${isAdmin ? `Order #${order.orderNumber} Confirmed Delivered` : `Parcel Received! Thank You, ${order.customerName || "Valued Client"}`}
+      </h2>
+      <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto 20px auto;">
+        ${
+          isAdmin
+            ? `Customer <strong>${order.customerName}</strong> (${order.customerEmail}) has confirmed receipt of order <strong>#${order.orderNumber}</strong>. Status in database marked as <strong>Delivered</strong>.`
+            : `We are delighted that your WEALTHY STYLE acquisition has arrived. We hope your new luxury pieces elevate your daily style with timeless elegance.`
+        }
+      </p>
+
+      <div style="background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 18px; margin: 18px auto; max-width: 480px; text-align: left; font-size: 13px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: #a1a1aa;">Order Number:</span>
+          <strong style="color: #ffffff; font-family: monospace;">#${order.orderNumber}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: #a1a1aa;">Customer:</span>
+          <strong style="color: #ffffff;">${order.customerName}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a1a1aa;">Total Value:</span>
+          <strong style="color: #d4af37;">₹${(order.grandTotal || 0).toLocaleString("en-IN")}</strong>
+        </div>
+      </div>
+
+      <div style="margin: 28px 0 10px 0;">
+        <a href="${storeUrl}/${isAdmin ? "admin/orders" : "sunglasses"}" class="btn">
+          ${isAdmin ? "View Admin Orders Dashboard" : "Explore New Arrivals"}
+        </a>
+      </div>
+    </div>
+    <div class="footer">
+      WEALTHY STYLE Luxury Atelier • Need assistance? <a href="mailto:concierge@wealthstyle.luxury" style="color: #d4af37;">concierge@wealthstyle.luxury</a><br/>
+      &copy; ${new Date().getFullYear()} WEALTHY STYLE Luxury. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`;
+}

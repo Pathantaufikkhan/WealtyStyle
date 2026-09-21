@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
@@ -135,40 +136,141 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             items: items.map((i) => ({
-              productId: i.productId,
+              productId: i.productId || i.product?.id,
               selectedVariant: i.selectedVariant,
               quantity: i.quantity,
+              price: i.price || i.product?.price,
+              name: i.product?.name,
             })),
             customerEmail: customerInfo.email,
             couponCode: appliedCoupon?.code,
             isAdvancePayment: isAdvance,
+            calculatedAmount: grandTotal,
           }),
         });
 
         if (!orderRes.ok) {
-          throw new Error("Failed to initialize server-side payment order");
+          const errorData = await orderRes.json().catch(() => null);
+          throw new Error(
+            errorData?.error || "Failed to initialize server-side payment order"
+          );
         }
 
         const orderData = await orderRes.json();
 
-        // 2. Signature verification simulation / execution
-        const verifyRes = await fetch("/api/payments/razorpay/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            razorpay_order_id: orderData.orderId,
-            razorpay_payment_id: `pay_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            razorpay_signature: `sig_${Date.now()}_verified`,
-          }),
-        });
+        // 2. Open Razorpay Gateway Modal (or simulate smoothly in test/demo mode)
+        const processRazorpay = (): Promise<string> => {
+          return new Promise((resolve, reject) => {
+            const hasRealKey =
+              orderData.keyId &&
+              !orderData.keyId.includes("demo") &&
+              !orderData.keyId.includes("dummy") &&
+              !orderData.orderId?.startsWith("order_mock_");
 
-        const verifyData = await verifyRes.json();
+            if (
+              typeof window !== "undefined" &&
+              (window as any).Razorpay &&
+              hasRealKey
+            ) {
+              const options = {
+                key: orderData.keyId,
+                amount: orderData.amount,
+                currency: orderData.currency || "INR",
+                name: "WEALTHY STYLE",
+                description: isAdvance
+                  ? "₹200 Security Advance (COD Confirmation)"
+                  : "Luxury Order Acquisition",
+                image: "/images/logo.png",
+                order_id: orderData.orderId,
+                handler: async function (response: any) {
+                  try {
+                    const verifyRes = await fetch(
+                      "/api/payments/razorpay/verify",
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          razorpay_order_id: response.razorpay_order_id,
+                          razorpay_payment_id: response.razorpay_payment_id,
+                          razorpay_signature: response.razorpay_signature,
+                        }),
+                      }
+                    );
+                    const verifyData = await verifyRes.json();
+                    if (!verifyData.verified) {
+                      reject(
+                        new Error(
+                          verifyData.error || "Payment verification failed"
+                        )
+                      );
+                    } else {
+                      resolve(
+                        verifyData.paymentId || response.razorpay_payment_id
+                      );
+                    }
+                  } catch (err: any) {
+                    reject(err);
+                  }
+                },
+                prefill: {
+                  name: customerInfo.fullName,
+                  email: customerInfo.email,
+                  contact: customerInfo.phone,
+                },
+                theme: {
+                  color: "#C5A880",
+                },
+                modal: {
+                  ondismiss: function () {
+                    reject(new Error("Payment was cancelled by user"));
+                  },
+                },
+              };
 
-        if (!verifyData.verified) {
-          throw new Error("Payment verification failed");
-        }
+              const rzp = new (window as any).Razorpay(options);
+              rzp.on("payment.failed", function (resp: any) {
+                reject(
+                  new Error(
+                    resp.error?.description ||
+                      "Payment transaction could not be completed"
+                  )
+                );
+              });
+              rzp.open();
+            } else {
+              // Seamless simulation for test / local sandbox environment
+              fetch("/api/payments/razorpay/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: orderData.orderId,
+                  razorpay_payment_id: `pay_${Date.now()}_${Math.random()
+                    .toString(36)
+                    .substring(2, 6)}`,
+                  razorpay_signature: `sig_${Date.now()}_verified`,
+                }),
+              })
+                .then((res) => res.json())
+                .then((verifyData) => {
+                  if (!verifyData.verified) {
+                    reject(
+                      new Error(
+                        verifyData.error || "Payment verification failed"
+                      )
+                    );
+                  } else {
+                    resolve(
+                      verifyData.paymentId ||
+                        (isAdvance ? "ADVANCE_200_PAID" : "RAZORPAY_PAID")
+                    );
+                  }
+                })
+                .catch(reject);
+            }
+          });
+        };
 
-        paymentId = verifyData.paymentId || (isAdvance ? "ADVANCE_200_PAID" : "RAZORPAY_PAID");
+        paymentId = await processRazorpay();
       }
 
       // 3. Assemble created order
@@ -816,6 +918,11 @@ export default function CheckoutPage() {
         isOpen={isOfferModalOpen}
         onClose={() => setIsOfferModalOpen(false)}
         orderCount={membershipStatus.orderCount}
+      />
+
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
       />
     </div>
   );

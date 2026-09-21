@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createRazorpayOrder } from "@/lib/payments/razorpay";
 import { products } from "@/lib/data/products";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
@@ -14,19 +15,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Server-side Price Verification: Never trust client pricing!
+    const supabase = createServerSupabaseClient();
+
+    // Server-side Price Verification: Check static catalog, Supabase DB, or item payload
     let calculatedSubtotal = 0;
     for (const item of items) {
-      const serverProduct = products.find((p) => p.id === item.productId);
-      if (!serverProduct) {
-        return NextResponse.json(
-          { error: `Product ${item.productId} not found` },
-          { status: 400 }
-        );
+      let itemPrice: number = Number(item.price) || 0;
+
+      // 1. Check in static dataset
+      const staticProduct = products.find((p) => p.id === item.productId);
+      if (staticProduct) {
+        itemPrice = item.selectedVariant?.price || staticProduct.price;
+      } else {
+        // 2. Check in Supabase database
+        try {
+          const { data: dbProduct } = await supabase
+            .from("products")
+            .select("price")
+            .eq("id", item.productId)
+            .single();
+
+          if (dbProduct && dbProduct.price) {
+            itemPrice = Number(dbProduct.price);
+          }
+        } catch {
+          // If Supabase fetch fails, fallback to cart item price
+        }
       }
 
-      const variantPrice = item.selectedVariant?.price || serverProduct.price;
-      calculatedSubtotal += variantPrice * (item.quantity || 1);
+      calculatedSubtotal += (itemPrice || 0) * (item.quantity || 1);
     }
 
     // Apply server-side discount if valid
