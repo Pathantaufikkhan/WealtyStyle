@@ -24,6 +24,64 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const compressImageToWebP = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new (window.Image as any)();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Failed to get canvas context"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Canvas to Blob failed"));
+                return;
+              }
+              const fileName = file.name.split(".")[0] + ".webp";
+              const compressedFile = new File([blob], fileName, {
+                type: "image/webp",
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            },
+            "image/webp",
+            0.85 // 85% quality - visually lossless but great compression
+          );
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file (PNG, JPG, WEBP, etc.)");
@@ -38,20 +96,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setIsUploading(true);
 
     try {
+      toast.loading("Compressing and formatting image...", { id: "upload-toast" });
+      const compressedFile = await compressImageToWebP(file);
+
       if (isSupabaseConfigured()) {
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.webp`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from(bucketName)
-          .upload(filePath, file, { cacheControl: "3600", upsert: true });
+          .upload(filePath, compressedFile, { cacheControl: "3600", upsert: true });
 
         if (!uploadError) {
           const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
           if (data?.publicUrl) {
             onChange(data.publicUrl);
-            toast.success("Image uploaded successfully to cloud storage!");
+            toast.success("Image compressed and uploaded successfully!", { id: "upload-toast" });
             setIsUploading(false);
             return;
           }
@@ -64,18 +124,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         const result = e.target?.result as string;
         if (result) {
           onChange(result);
-          toast.success("Image loaded from your device!");
+          toast.success("Image loaded and compressed successfully!", { id: "upload-toast" });
         }
         setIsUploading(false);
       };
       reader.onerror = () => {
-        toast.error("Failed to read image file from your device");
+        toast.error("Failed to read image file from your device", { id: "upload-toast" });
         setIsUploading(false);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressedFile);
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error("Could not process image. Please try again.");
+      toast.error("Could not process image. Please try again.", { id: "upload-toast" });
       setIsUploading(false);
     }
   };

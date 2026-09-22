@@ -44,7 +44,9 @@ export const useStoreData = create<StoreDataState>()(
       syncWithSupabase: async () => {
         try {
           // 1. Sync Products
-          const res = await fetch('/api/products').then((r) => r.json()).catch(() => null);
+          const productsFetch = await fetch('/api/products');
+          if (!productsFetch.ok) throw new Error(`Products fetch failed: ${productsFetch.statusText}`);
+          const res = await productsFetch.json();
           if (res?.success && Array.isArray(res.products) && res.products.length > 0) {
             const formattedSupabaseProducts: Product[] = res.products.map((p: any) => ({
               id: p.id,
@@ -86,7 +88,9 @@ export const useStoreData = create<StoreDataState>()(
           }
 
           // 2. Sync Orders in Real-Time
-          const ordersRes = await fetch('/api/orders').then((r) => r.json()).catch(() => null);
+          const ordersFetch = await fetch('/api/orders');
+          if (!ordersFetch.ok) throw new Error(`Orders fetch failed: ${ordersFetch.statusText}`);
+          const ordersRes = await ordersFetch.json();
           if (ordersRes?.success && Array.isArray(ordersRes.orders) && ordersRes.orders.length > 0) {
             const formattedOrders: Order[] = ordersRes.orders.map((o: any) => ({
               id: o.id,
@@ -133,6 +137,7 @@ export const useStoreData = create<StoreDataState>()(
           }
         } catch (err) {
           console.error("Supabase sync error:", err);
+          throw err; // Re-throw so caller can display toast.error
         }
       },
 

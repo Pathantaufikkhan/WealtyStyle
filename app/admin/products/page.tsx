@@ -125,7 +125,7 @@ export default function AdminProductsPage() {
     });
   };
 
-  const handleUpdateProduct = (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
 
@@ -142,7 +142,7 @@ export default function AdminProductsPage() {
       ? [editFormData.imageUrl, ...(editingProduct.images?.slice(1) || [])]
       : editingProduct.images;
 
-    updateProduct(editingProduct.id, {
+    const updatedProduct = {
       name: editFormData.name,
       tagline: editFormData.tagline,
       brand: editFormData.brand,
@@ -158,10 +158,24 @@ export default function AdminProductsPage() {
       isFeatured: editFormData.isFeatured,
       isBestSeller: editFormData.isBestSeller,
       isNewArrival: editFormData.isNewArrival,
-    });
+    };
 
-    toast.success(`Updated "${editFormData.name}" successfully!`);
-    setEditingProduct(null);
+    try {
+      const res = await fetch("/api/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product: { ...editingProduct, ...updatedProduct } }),
+      });
+      
+      if (!res.ok) throw new Error("API update failed");
+
+      updateProduct(editingProduct.id, updatedProduct);
+      toast.success(`Updated "${editFormData.name}" successfully!`);
+      setEditingProduct(null);
+    } catch (err) {
+      console.error("Supabase product update error:", err);
+      toast.error("Failed to update product. Please check your connection.");
+    }
   };
 
   const handleCreateProduct = (e: React.FormEvent) => {
@@ -218,42 +232,37 @@ export default function AdminProductsPage() {
       attributes: {},
     };
 
-    addProduct(newProd);
-
     // Sync directly to Supabase PostgreSQL Database
     try {
-      fetch("/api/products", {
+      const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product: newProd }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            console.log("Product saved to Supabase:", data);
-          }
-        })
-        .catch((e) => console.error("Supabase product sync failed:", e));
+      });
+      
+      if (!res.ok) throw new Error("API sync failed");
+
+      addProduct(newProd);
+      toast.success(`Published new creation "${newProd.name}" to catalog!`);
+      setIsAddModalOpen(false);
+      setFormData({
+        name: "",
+        tagline: "",
+        brand: "GLAMSTEP Haute Eyewear",
+        category: "sunglasses",
+        price: 4999,
+        originalPrice: 7999,
+        stockCount: 20,
+        imageUrl: "",
+        description: "",
+        isFeatured: true,
+        isBestSeller: false,
+        isNewArrival: true,
+      });
     } catch (err) {
       console.error("Supabase product sync error:", err);
+      toast.error("Failed to publish product. Please check your connection.");
     }
-
-    toast.success(`Published new creation "${newProd.name}" to catalog!`);
-    setIsAddModalOpen(false);
-    setFormData({
-      name: "",
-      tagline: "",
-      brand: "GLAMSTEP Haute Eyewear",
-      category: "sunglasses",
-      price: 4999,
-      originalPrice: 7999,
-      stockCount: 20,
-      imageUrl: "",
-      description: "",
-      isFeatured: true,
-      isBestSeller: false,
-      isNewArrival: true,
-    });
   };
 
   return (
@@ -437,15 +446,22 @@ export default function AdminProductsPage() {
                       </Link>
 
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-                            deleteProduct(product.id);
-                            fetch("/api/products", {
-                              method: "DELETE",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ slug: product.slug, id: product.id }),
-                            }).catch((e) => console.error("Supabase product delete failed:", e));
-                            toast.info(`Deleted ${product.name}`);
+                            try {
+                              const res = await fetch("/api/products", {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ slug: product.slug, id: product.id }),
+                              });
+                              if (!res.ok) throw new Error("Delete failed");
+                              
+                              deleteProduct(product.id);
+                              toast.info(`Deleted ${product.name}`);
+                            } catch (e) {
+                              console.error("Supabase product delete failed:", e);
+                              toast.error(`Failed to delete ${product.name}`);
+                            }
                           }
                         }}
                         className="p-1.5 rounded bg-zinc-800 hover:bg-rose-500 hover:text-white text-zinc-400 transition-colors"

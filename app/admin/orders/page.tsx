@@ -64,11 +64,12 @@ export default function AdminOrdersPage() {
   };
 
   const handleStatusChange = async (order: any, newStatus: OrderStatus) => {
+    // Optimistic update
     updateOrderStatus(order.id, newStatus);
 
     try {
       // 1. Update status in Supabase Database
-      await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,6 +78,8 @@ export default function AdminOrdersPage() {
           status: newStatus,
         }),
       });
+      
+      if (!res.ok) throw new Error("Failed to update status in Database");
 
       // 2. Trigger automated email notifications to customer and admin
       fetch("/api/orders/notify-status", {
@@ -88,7 +91,9 @@ export default function AdminOrdersPage() {
           orderNumber: order.orderNumber,
           orderId: order.id,
         }),
-      }).catch((e) => console.error("Status notification email trigger error:", e));
+      })
+      .then(r => { if (!r.ok) console.warn("Email failed to send") })
+      .catch((e) => console.error("Status notification email trigger error:", e));
 
       if (newStatus === "Shipped") {
         toast.success(`Order #${order.orderNumber} marked as Shipped! Dispatch emails sent to customer & admin.`);
@@ -101,7 +106,9 @@ export default function AdminOrdersPage() {
       }
     } catch (err) {
       console.error("Failed to update status:", err);
-      toast.error("Failed to update order status");
+      // Rollback to original status
+      updateOrderStatus(order.id, order.orderStatus); 
+      toast.error("Failed to update order status. Database error.");
     }
   };
 

@@ -230,3 +230,20 @@ CREATE POLICY "Admins have full access to products" ON public.products FOR ALL U
 CREATE POLICY "Admins have full access to orders" ON public.orders FOR ALL USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
 );
+
+-- ==============================================================================
+-- INDEXES FOR PERFORMANCE OPTIMIZATION
+-- ==============================================================================
+
+-- Products Indexes (For fast filtering and home page sections)
+CREATE INDEX IF NOT EXISTS idx_products_category_slug ON public.products(category_slug);
+CREATE INDEX IF NOT EXISTS idx_products_is_featured ON public.products(is_featured);
+CREATE INDEX IF NOT EXISTS idx_products_is_bestseller ON public.products(is_bestseller);
+CREATE INDEX IF NOT EXISTS idx_products_is_new_arrival ON public.products(is_new_arrival);
+
+-- Foreign Key Indexes (For fast JOIN operations and lookups)
+CREATE INDEX IF NOT EXISTS idx_product_images_product_id ON public.product_images(product_id);
+CREATE INDEX IF NOT EXISTS idx_product_variants_product_id ON public.product_variants(product_id);
+CREATE INDEX IF NOT EXISTS idx_product_reviews_product_id ON public.product_reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
