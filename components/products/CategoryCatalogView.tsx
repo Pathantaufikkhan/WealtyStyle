@@ -27,11 +27,7 @@ export function CategoryCatalogView({
   allProducts: propProducts,
   initialFilterTag,
 }: CategoryCatalogViewProps) {
-  const { products: storeProducts, syncWithSupabase } = useStoreData();
-
-  useEffect(() => {
-    syncWithSupabase();
-  }, [syncWithSupabase]);
+  const { products: storeProducts } = useStoreData();
 
   const allProducts = storeProducts && storeProducts.length > 0 ? storeProducts : propProducts;
   const categoryMeta = categorySlug ? categoriesMeta[categorySlug] : null;

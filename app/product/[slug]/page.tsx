@@ -44,11 +44,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const resolvedParams = "then" in params ? React.use(params as Promise<{ slug: string }>) : params;
   const slug = resolvedParams.slug;
 
-  const { products: storeProducts, syncWithSupabase } = useStoreData();
-
-  React.useEffect(() => {
-    syncWithSupabase();
-  }, [syncWithSupabase]);
+  const { products: storeProducts } = useStoreData();
 
   const allProductsList = storeProducts && storeProducts.length > 0 ? storeProducts : products;
   const product = allProductsList.find((p) => p.slug === slug);

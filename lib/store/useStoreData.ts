@@ -9,8 +9,9 @@ interface StoreDataState {
   orders: Order[];
   coupons: Coupon[];
   reviews: ProductReview[];
-  
   // Cloud Sync
+  isSyncing: boolean;
+  isSyncedOnce: boolean;
   syncWithSupabase: () => Promise<void>;
 
   // Product actions
@@ -40,8 +41,12 @@ export const useStoreData = create<StoreDataState>()(
       orders: initialOrders,
       coupons: initialCoupons,
       reviews: initialReviews,
+      isSyncing: false,
+      isSyncedOnce: false,
 
       syncWithSupabase: async () => {
+        if (get().isSyncing) return;
+        set({ isSyncing: true });
         try {
           // 1. Sync Products
           const productsFetch = await fetch('/api/products');
@@ -135,7 +140,10 @@ export const useStoreData = create<StoreDataState>()(
               return { orders: [...formattedOrders, ...remainingOrders] };
             });
           }
+          
+          set({ isSyncedOnce: true, isSyncing: false });
         } catch (err) {
+          set({ isSyncing: false });
           console.error("Supabase sync error:", err);
           throw err; // Re-throw so caller can display toast.error
         }

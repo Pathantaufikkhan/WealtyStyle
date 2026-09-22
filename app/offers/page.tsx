@@ -10,11 +10,7 @@ import { formatPrice } from "@/lib/utils/currency";
 import { toast } from "sonner";
 
 export default function OffersPage() {
-  const { products, coupons, syncWithSupabase } = useStoreData();
-
-  useEffect(() => {
-    syncWithSupabase();
-  }, [syncWithSupabase]);
+  const { products, coupons } = useStoreData();
 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({

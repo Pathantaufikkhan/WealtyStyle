@@ -8,11 +8,7 @@ import { ProductGrid } from "@/components/products/ProductGrid";
 import { Button } from "@/components/ui/button";
 
 export function TrendingSection() {
-  const { products, syncWithSupabase } = useStoreData();
-
-  useEffect(() => {
-    syncWithSupabase();
-  }, [syncWithSupabase]);
+  const { products } = useStoreData();
 
   const [activeTab, setActiveTab] = useState<"all" | "sunglasses" | "shoes" | "watches">("all");
 

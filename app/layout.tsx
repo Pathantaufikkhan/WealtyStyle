@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { CinematicAmbientLight } from "@/components/ui/CinematicAmbientLight";
+import { StoreInitializer } from "@/components/providers/StoreInitializer";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -109,6 +110,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <CartDrawer />
+          <StoreInitializer />
           <CinematicAmbientLight />
           <Footer />
         </ThemeProvider>
